@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: financial-system
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_DB: financial-system_db
+    volumes:
+      - financial-system_db_pg_data:/var/lib/postgresql/data
+
+volumes:
+  financial-system_db_pg_data:
