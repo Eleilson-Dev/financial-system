@@ -28,7 +28,7 @@ export class CompanyService {
           email: ownerData.email,
           password: await bcrypt.hash(hashedPassword, 10),
           role: "OWNER",
-          company: { connect: { id: newCompany.id } },
+          companyId: newCompany.id,
         },
       });
 

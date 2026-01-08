@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const companySchema = z.object({
   name: z.string().min(3, "Nome da empresa deve ter no mínimo 3 caracteres"),
-
   document: z
     .string()
     .min(11, "Documento inválido")

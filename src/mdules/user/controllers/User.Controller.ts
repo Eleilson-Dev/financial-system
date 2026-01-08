@@ -7,7 +7,8 @@ export class UserController {
   constructor(@inject("UserService") private userService: UserService) {}
 
   findAllUsers = async (req: Request, res: Response) => {
-    const response = await this.userService.findAllUsers();
+    const { companyId } = res.locals.encodedToken;
+    const response = await this.userService.findAllUsers(companyId);
 
     return res.status(200).json(response);
   };
@@ -18,5 +19,14 @@ export class UserController {
     );
 
     return res.status(200).json(response);
+  };
+
+  userRegister = async (req: Request, res: Response) => {
+    const response = await this.userService.userRegister(
+      req.body,
+      res.locals.encodedToken
+    );
+
+    return res.status(200).json({ message: "tudo certo", response });
   };
 }

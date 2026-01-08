@@ -19,7 +19,7 @@ companyRouter.post(
   "/company/create",
   ValidateBody.execute(
     z.object({
-      company: companySchema, // schema da Company
+      company: companySchema,
       owner: ownerSchema,
     })
   ),
