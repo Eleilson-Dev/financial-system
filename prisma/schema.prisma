@@ -97,7 +97,7 @@ model CashRegister {
   openingAmount Decimal   @db.Decimal(10, 2)
   closingAmount Decimal?  @db.Decimal(10, 2)
 
-  status CashStatus
+  status CashStatus @default(OPEN)
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
@@ -130,9 +130,9 @@ model Sale {
 model Employee {
   id       String  @id @default(uuid())
   name     String
-  role     String
   salary   Decimal @db.Decimal(10, 2)
   isActive Boolean @default(true)
+  cpf      String  @unique
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
