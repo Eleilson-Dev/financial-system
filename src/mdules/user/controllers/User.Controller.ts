@@ -6,9 +6,9 @@ import type { UserService } from "../services/User.Service.js";
 export class UserController {
   constructor(@inject("UserService") private userService: UserService) {}
 
-  findAllUsers = async (req: Request, res: Response) => {
+  listAllUsers = async (req: Request, res: Response) => {
     const { companyId } = res.locals.encodedToken;
-    const response = await this.userService.findAllUsers(companyId);
+    const response = await this.userService.listAllUsers(companyId);
 
     return res.status(200).json(response);
   };
@@ -27,6 +27,8 @@ export class UserController {
       res.locals.encodedToken
     );
 
-    return res.status(200).json({ message: "tudo certo", response });
+    return res
+      .status(200)
+      .json([{ message: "User registration successful.", response }]);
   };
 }

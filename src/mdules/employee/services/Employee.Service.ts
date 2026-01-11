@@ -9,7 +9,7 @@ export class EmployeeService {
     companyId: any
   ) => {
     try {
-      const newEmployee = prisma.employee.create({
+      const newEmployee = await prisma.employee.create({
         data: {
           companyId,
           name: employeeData.name,
@@ -24,4 +24,14 @@ export class EmployeeService {
       return "erro ao tentar registrar funcionario";
     }
   };
+
+  showAllEmployees = async (companyId: any) => {
+    const response = await prisma.employee.findMany({
+      where: { companyId: companyId },
+    });
+
+    return response;
+  };
+
+  updateEmployee = async () => {};
 }

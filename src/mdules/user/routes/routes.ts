@@ -14,7 +14,7 @@ const userController = container.resolve(UserController);
 export const userRouter = Router();
 
 userRouter.get("/users/list", VerifyToken.execute, (req, res) =>
-  userController.findAllUsers(req, res)
+  userController.listAllUsers(req, res)
 );
 
 userRouter.post(

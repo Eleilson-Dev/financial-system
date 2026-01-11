@@ -17,4 +17,14 @@ export class EmployeeController {
 
     return res.status(200).json(response);
   };
+
+  showAllEmployees = async (req: Request, res: Response) => {
+    const { companyId } = res.locals.encodedToken;
+
+    const response = await this.employeeService.showAllEmployees(companyId);
+
+    return res.status(200).json(response);
+  };
+
+  updateEmployee = async () => {};
 }

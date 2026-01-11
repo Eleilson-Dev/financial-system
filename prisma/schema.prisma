@@ -39,6 +39,10 @@ enum ExpenseCategory {
   OTHER
 }
 
+enum SalaryStatus {
+  PAID
+}
+
 model Company {
   id        String   @id @default(uuid())
   name      String
@@ -52,6 +56,17 @@ model Company {
   employees       Employee[]
   monthlyClosures MonthlyClosure[]
   salaryPayments  SalaryPayment[]
+  cashAccount     CashAccount?
+}
+
+model CashAccount {
+  id      String  @id @default(uuid())
+  balance Decimal @db.Decimal(12, 2)
+
+  companyId String  @unique
+  company   Company @relation(fields: [companyId], references: [id])
+
+  updatedAt DateTime @updatedAt
 }
 
 model Expense {
@@ -84,10 +99,13 @@ model User {
   openedCashRegisters CashRegister[] @relation("OpenedCash")
   closedCashRegisters CashRegister[] @relation("ClosedCash")
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  sales           Sale[]
-  monthlyClosures MonthlyClosure[]
+  salaryPayments SalaryPayment[] @relation("UserSalaryPayments")
+
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  sales                   Sale[]
+  monthlyClosures         MonthlyClosure[]
+  employeeSalaryHistories EmployeeSalaryHistory[]
 }
 
 model CashRegister {
@@ -98,6 +116,8 @@ model CashRegister {
   closingAmount Decimal?  @db.Decimal(10, 2)
 
   status CashStatus @default(OPEN)
+
+  totalSales Decimal @default(0) @db.Decimal(12, 2)
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
@@ -139,7 +159,10 @@ model Employee {
 
   salaryPayments SalaryPayment[]
 
-  createdAt DateTime @default(now())
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  terminatedAt            DateTime?
+  employeeSalaryHistories EmployeeSalaryHistory[]
 }
 
 model SalaryPayment {
@@ -153,6 +176,25 @@ model SalaryPayment {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
+
+  paidByUserId String
+  paidByUser   User   @relation("UserSalaryPayments", fields: [paidByUserId], references: [id])
+}
+
+model EmployeeSalaryHistory {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  oldSalary Decimal @db.Decimal(10, 2)
+  newSalary Decimal @db.Decimal(10, 2)
+  increase  Decimal @db.Decimal(10, 2)
+
+  reason    String?
+  changedAt DateTime @default(now())
+
+  changedById String?
+  changedBy   User?   @relation(fields: [changedById], references: [id])
 }
 
 model MonthlyClosure {

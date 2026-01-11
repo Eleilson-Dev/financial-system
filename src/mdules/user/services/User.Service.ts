@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 
 @injectable()
 export class UserService {
-  findAllUsers = async (companyId: string) => {
+  listAllUsers = async (companyId: string) => {
     const response = await prisma.user.findMany({ where: { companyId } });
 
     return response;

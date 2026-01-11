@@ -10,8 +10,6 @@ export class IsCashOpen {
       where: { status: "OPEN", companyId },
     });
 
-    console.log(response);
-
     response ? (res.locals.cashRegisterId = response.id) : null;
 
     if (response) {
