@@ -2,7 +2,7 @@ import { Router } from "express";
 import { container } from "tsyringe";
 import { SaleService } from "../services/Sale.Service.js";
 import { SaleController } from "../controllers/Sale.Controller.js";
-import { VerifyToken } from "../../../shared/middlewares/VerifyToken.js";
+import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import { createSaleSchema } from "../schema/schema.js";
 import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.middleware.js";

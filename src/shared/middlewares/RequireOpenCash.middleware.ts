@@ -15,7 +15,7 @@ export class RequireOpenCash {
     });
 
     if (!cashOpen) {
-      throw new AppError(400, "There is no open cash register");
+      throw new AppError(400, "This user does not have an open cash register.");
     }
 
     res.locals.cashOpenData = { userId, cashOpen: cashOpen.id };

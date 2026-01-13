@@ -13,6 +13,7 @@ import { saleRouter } from "./mdules/sale/routes/routes.js";
 import { employeeRouter } from "./mdules/employee/routes/routes.js";
 import { salaryPaymentRouter } from "./mdules/salaryPayment/routes/routes.js";
 import { SalaryPaymentHistoryRouter } from "./mdules/SalaryPaymentHistory/routes/routes.js";
+import { cashAccountRouter } from "./mdules/CashAccount/routes/routes.js";
 
 export const app = express();
 
@@ -20,12 +21,13 @@ app.use(cors());
 app.use(helmet());
 app.use(json());
 
-app.use("/financial/sistem", companyRouter);
-app.use("/financial/sistem", userRouter);
-app.use("/financial/sistem", cashRouter);
-app.use("/financial/sistem", saleRouter);
-app.use("/financial/sistem", employeeRouter);
-app.use("/financial/sistem", salaryPaymentRouter);
-app.use("/financial/sistem", SalaryPaymentHistoryRouter);
+app.use("/financial/system", companyRouter);
+app.use("/financial/system", userRouter);
+app.use("/financial/system", cashRouter);
+app.use("/financial/system", saleRouter);
+app.use("/financial/system", employeeRouter);
+app.use("/financial/system", salaryPaymentRouter);
+app.use("/financial/system", SalaryPaymentHistoryRouter);
+app.use("/financial/system", cashAccountRouter);
 
 app.use(HandleErrors.execute);

@@ -6,7 +6,19 @@ import bcrypt from "bcrypt";
 @injectable()
 export class UserService {
   listAllUsers = async (companyId: string) => {
-    const response = await prisma.user.findMany({ where: { companyId } });
+    const response = await prisma.user.findMany({
+      where: { companyId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        companyId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
     return response;
   };
@@ -19,17 +31,19 @@ export class UserService {
     try {
       const hashedPassword = userData.password;
 
-      const newUser = prisma.user.create({
+      const newUser = await prisma.user.create({
         data: {
           name: userData.name,
           password: await bcrypt.hash(hashedPassword, 10),
-          email: userData.email,
+          email: userData.email.toLowerCase(),
           role: userData.role,
           companyId: encodedToken.companyId,
         },
       });
 
-      return newUser;
+      const { password, ...userWithoutPassword } = newUser;
+
+      return userWithoutPassword;
     } catch (error) {
       console.error(error);
       return { error: "Erro ao criar novo user" };

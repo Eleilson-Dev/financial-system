@@ -43,6 +43,18 @@ enum SalaryStatus {
   PAID
 }
 
+enum TransactionDirection {
+  IN
+  OUT
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  SALARY_PAYMENT
+  SALE
+}
+
 model Company {
   id        String   @id @default(uuid())
   name      String
@@ -66,7 +78,25 @@ model CashAccount {
   companyId String  @unique
   company   Company @relation(fields: [companyId], references: [id])
 
-  updatedAt DateTime @updatedAt
+  updatedAt               DateTime                 @updatedAt
+  cashAccountTransactions CashAccountTransaction[]
+}
+
+model CashAccountTransaction {
+  id            String      @id @default(uuid())
+  cashAccountId String
+  cashAccount   CashAccount @relation(fields: [cashAccountId], references: [id])
+
+  direction   TransactionDirection // IN | OUT
+  type        TransactionType // INCOME | EXPENSE | SALARY_PAYMENT | SALE
+  amount      Decimal              @db.Decimal(12, 2)
+  description String?
+  createdAt   DateTime             @default(now())
+
+  referenceId String?
+
+  performedById String? // opcional, usuário que fez a operação
+  performedBy   User?   @relation(fields: [performedById], references: [id])
 }
 
 model Expense {
@@ -101,11 +131,12 @@ model User {
 
   salaryPayments SalaryPayment[] @relation("UserSalaryPayments")
 
-  createdAt               DateTime                @default(now())
-  updatedAt               DateTime                @updatedAt
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
   sales                   Sale[]
   monthlyClosures         MonthlyClosure[]
   employeeSalaryHistories EmployeeSalaryHistory[]
+  cashAccountTransactions CashAccountTransaction[]
 }
 
 model CashRegister {

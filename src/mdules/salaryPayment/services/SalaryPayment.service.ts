@@ -1,7 +1,7 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../../../config/database.js";
-import { AppError } from "../../../shared/errors/AppError.js";
 import { referenceMonth } from "../../../shared/utils/referenceMonth.js";
+import { AppError } from "../../../shared/errors/AppError.js";
 
 interface PaySalaryDTO {
   employeeId: string;
@@ -38,6 +38,22 @@ export class SalaryPaymentService {
             balance: {
               decrement: salary,
             },
+          },
+        });
+
+        const cashAccount = await tx.cashAccount.findFirstOrThrow({
+          where: { companyId: companyId },
+        });
+
+        await tx.cashAccountTransaction.create({
+          data: {
+            cashAccountId: cashAccount.id,
+            amount: salary,
+            type: "SALARY_PAYMENT",
+            description: "Pagamento de Salário",
+            performedById: userId,
+            direction: "OUT",
+            referenceId: payment.id,
           },
         });
 

@@ -39,7 +39,9 @@ export class CompanyService {
           },
         });
 
-        return { company, cashAccount, owner };
+        const { password, ...restOwner } = owner;
+
+        return { company, cashAccount, restOwner };
       });
 
       return result;
@@ -47,15 +49,5 @@ export class CompanyService {
       console.error(error);
       return { error: "Erro ao criar empresa and owner" };
     }
-  };
-
-  showBalance = async () => {
-    const result = await prisma.$transaction(async (tx) => {
-      const balance = await tx.cashAccount.findMany();
-
-      return balance;
-    });
-
-    return result;
   };
 }

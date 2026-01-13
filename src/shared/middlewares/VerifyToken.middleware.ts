@@ -1,9 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../errors/AppError.js";
 import jwt from "jsonwebtoken";
+import { prisma } from "../../config/database.js";
 
 export class VerifyToken {
-  static execute(req: Request, res: Response, next: NextFunction) {
+  static async execute(req: Request, res: Response, next: NextFunction) {
     const authorization = req.headers.authorization;
     const token = authorization?.replace("Bearer", "").trim();
 
@@ -11,9 +12,26 @@ export class VerifyToken {
       throw new AppError(401, "Token is required");
     }
 
-    try {
-      const encodedToken = jwt.verify(token, process.env.JWT_SECRET as string);
+    let encodedToken: any;
 
+    encodedToken = jwt.verify(token, process.env.JWT_SECRET as string);
+
+    const { userId, companyId } = encodedToken;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+    });
+
+    if (!user || !company) {
+      throw new AppError(
+        401,
+        "Sua sessão não é mais válida. Faça login novamente."
+      );
+    }
+
+    try {
       res.locals.encodedToken = encodedToken;
       next();
     } catch (error: any) {

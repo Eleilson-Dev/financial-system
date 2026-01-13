@@ -4,8 +4,10 @@ import { AppError } from "../errors/AppError.js";
 
 export class IsEmailExits {
   static async execute(req: Request, res: Response, next: NextFunction) {
+    const email = req.body.email.toLowerCase();
+
     const response = await prisma.user.findFirst({
-      where: { email: req.body.email },
+      where: { email },
     });
 
     if (response) {

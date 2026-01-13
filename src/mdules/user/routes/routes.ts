@@ -6,7 +6,7 @@ import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middlewar
 import { userCreateSchema, userLoginSchema } from "../schemas/schema.js";
 import { VerifyLoginUser } from "../../../shared/middlewares/VerifyLoginUser.middleware.js";
 import { IsEmailExits } from "../../../shared/middlewares/IsEmailExists.middleware.js";
-import { VerifyToken } from "../../../shared/middlewares/VerifyToken.js";
+import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.js";
 
 container.registerSingleton("UserService", UserService);
 const userController = container.resolve(UserController);

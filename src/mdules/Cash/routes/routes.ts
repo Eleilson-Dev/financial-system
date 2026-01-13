@@ -2,7 +2,7 @@ import { Router } from "express";
 import { container } from "tsyringe";
 import { CashService } from "../services/Cash.Service.js";
 import { CashController } from "../controllers/Cash.Controller.js";
-import { VerifyToken } from "../../../shared/middlewares/VerifyToken.js";
+import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import { openCashRegisterSchema } from "../schema/schema.js";
 import { IsCashOpen } from "../../../shared/middlewares/IsCashOpen.middleware.js";

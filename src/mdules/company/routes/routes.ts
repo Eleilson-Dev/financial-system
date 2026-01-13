@@ -5,8 +5,6 @@ import { CompanyService } from "../services/Company.Service.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import { companySchema, ownerSchema } from "../schemas/schemas.js";
 import { z } from "zod";
-import { VerifyToken } from "../../../shared/middlewares/VerifyToken.js";
-import { VerifyAdmin } from "../../../shared/middlewares/VerifyAdm.middleware.js";
 import { IsCompanyExits } from "../../../shared/middlewares/IsCompanyExists.middleware.js";
 
 export const companyRouter = Router();
@@ -28,11 +26,4 @@ companyRouter.post(
     })
   ),
   (req, res) => companyController.createCompany(req, res)
-);
-
-companyRouter.get(
-  "/company/show/balance",
-  VerifyToken.execute,
-  VerifyAdmin.execute,
-  (req, res) => companyController.showBalance(req, res)
 );

@@ -19,10 +19,4 @@ export class CompanyController {
 
     return res.status(200).json({ message: "new company created", response });
   };
-
-  showBalance = async (req: Request, res: Response) => {
-    const response = await this.companyService.showBalance();
-
-    return res.status(200).json(response);
-  };
 }

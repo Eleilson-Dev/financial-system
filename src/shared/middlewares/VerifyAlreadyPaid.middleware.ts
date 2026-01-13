@@ -6,6 +6,7 @@ import { referenceMonth } from "../utils/referenceMonth.js";
 export class VerifyAlreadyPaid {
   static async execute(req: Request, res: Response, next: NextFunction) {
     const { employeeId } = req.query;
+
     const { userId, companyId, role } = res.locals.encodedToken;
     const reference = referenceMonth();
 
@@ -45,8 +46,7 @@ export class VerifyAlreadyPaid {
       throw new AppError(409, "Salário já foi pago este mês");
     }
 
-    res.locals.employeeId = employeeId;
-    res.locals = { companyId, salary };
+    res.locals = { companyId, salary, employeeId, userId };
 
     next();
   }

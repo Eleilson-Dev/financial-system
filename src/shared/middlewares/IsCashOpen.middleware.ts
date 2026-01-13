@@ -4,7 +4,7 @@ import { AppError } from "../errors/AppError.js";
 
 export class IsCashOpen {
   static async execute(req: Request, res: Response, next: NextFunction) {
-    const { companyId } = res.locals.encodedToken;
+    const { companyId, userId } = res.locals.encodedToken;
 
     const response = await prisma.cashRegister.findFirst({
       where: { status: "OPEN", companyId },

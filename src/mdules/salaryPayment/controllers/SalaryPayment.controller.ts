@@ -11,8 +11,8 @@ export class SalaryPaymentController {
   paySalary = async (req: Request, res: Response) => {
     const localKeys = {
       employeeId: res.locals.employeeId,
-      userId: res.locals.encodedToken.userId,
-      companyId: res.locals.encodedToken.companyId,
+      userId: res.locals.userId,
+      companyId: res.locals.companyId,
       salary: res.locals.salary,
     };
 

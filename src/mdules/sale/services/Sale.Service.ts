@@ -20,16 +20,33 @@ export class SaleService {
           },
         });
 
-        await tx.cashAccount.upsert({
+        const cashAccount = await tx.cashAccount.findUnique({
           where: { companyId },
-          create: {
-            companyId,
-            balance: saleData.amount,
+        });
+
+        if (!cashAccount) {
+          throw new AppError(
+            500,
+            "Erro estrutural: empresa sem conta financeira"
+          );
+        }
+
+        await tx.cashAccount.update({
+          where: { companyId },
+          data: {
+            balance: { increment: saleData.amount },
           },
-          update: {
-            balance: {
-              increment: saleData.amount,
-            },
+        });
+
+        await tx.cashAccountTransaction.create({
+          data: {
+            cashAccountId: cashAccount.id,
+            amount: saleData.amount,
+            type: "INCOME",
+            description: "Venda registrada",
+            performedById: userId,
+            direction: "IN",
+            referenceId: sale.id,
           },
         });
 

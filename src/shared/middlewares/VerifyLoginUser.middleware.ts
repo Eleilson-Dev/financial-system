@@ -6,8 +6,10 @@ import jwt from "jsonwebtoken";
 
 export class VerifyLoginUser {
   static async execute(req: Request, res: Response, next: NextFunction) {
+    const email = req.body.email.toLowerCase();
+
     const user = await prisma.user.findFirst({
-      where: { email: req.body.email },
+      where: { email },
     });
 
     if (!user) {

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { container } from "tsyringe";
 import { EmployeeService } from "../services/Employee.Service.js";
 import { EmployeeController } from "../controllers/Employee.Controller.js";
-import { VerifyToken } from "../../../shared/middlewares/VerifyToken.js";
+import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import { createEmployeeSchema } from "../schema/schema.js";
 import { VerifyAdmin } from "../../../shared/middlewares/VerifyAdm.middleware.js";
