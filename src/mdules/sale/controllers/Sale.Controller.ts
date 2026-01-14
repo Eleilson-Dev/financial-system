@@ -12,6 +12,6 @@ export class SaleController {
       cashRegisterId: res.locals.cashOpenData.cashOpen,
     });
 
-    res.status(200).json(response);
+    res.status(201).json(response);
   };
 }

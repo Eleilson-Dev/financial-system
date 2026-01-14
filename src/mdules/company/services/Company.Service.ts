@@ -2,6 +2,7 @@ import { prisma } from "../../../config/database.js";
 import { injectable } from "tsyringe";
 import bcrypt from "bcrypt";
 import type { TCreateCompany, TCreateOwner } from "../schemas/schemas.js";
+import { AppError } from "../../../shared/errors/AppError.js";
 
 @injectable()
 export class CompanyService {
@@ -47,7 +48,7 @@ export class CompanyService {
       return result;
     } catch (error) {
       console.error(error);
-      return { error: "Erro ao criar empresa and owner" };
+      throw new AppError(400, "Erro ao criar empresa and owner");
     }
   };
 }

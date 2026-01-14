@@ -15,7 +15,7 @@ export class EmployeeController {
       companyId
     );
 
-    return res.status(200).json(response);
+    return res.status(201).json(response);
   };
 
   showAllEmployees = async (req: Request, res: Response) => {
@@ -25,6 +25,4 @@ export class EmployeeController {
 
     return res.status(200).json(response);
   };
-
-  updateEmployee = async () => {};
 }

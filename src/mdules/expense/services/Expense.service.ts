@@ -1,24 +1,26 @@
 import { injectable } from "tsyringe";
-import { prisma } from "../../../config/database.js";
-import type { TCreateSaleSchema } from "../schema/schema.js";
 import { AppError } from "../../../shared/errors/AppError.js";
+import { prisma } from "../../../config/database.js";
+import type { TCreateExpenseSchema } from "../schema/schema.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 
 @injectable()
-export class SaleService {
-  registerSale = async (saleData: TCreateSaleSchema, resLocals: any) => {
+export class ExpenseService {
+  registerExpense = async (
+    expenseData: TCreateExpenseSchema,
+    userId: string,
+    companyId: string
+  ) => {
     try {
-      const { companyId, userId, cashRegisterId } = resLocals;
       const { month, year } = await getOpenCompetency(companyId);
-
       const result = await prisma.$transaction(async (tx) => {
-        const sale = await tx.sale.create({
+        const expense = await tx.expense.create({
           data: {
-            amount: saleData.amount,
-            paymentMethod: saleData.paymentMethod,
-            cashRegisterId,
-            companyId,
             createdById: userId,
+            companyId: companyId,
+            amount: expenseData.amount,
+            description: expenseData.description,
+            category: expenseData.category,
             referenceMonth: month,
             referenceYear: year,
           },
@@ -38,40 +40,31 @@ export class SaleService {
         await tx.cashAccount.update({
           where: { companyId },
           data: {
-            balance: { increment: saleData.amount },
+            balance: { decrement: expenseData.amount },
           },
         });
 
         await tx.cashAccountTransaction.create({
           data: {
             cashAccountId: cashAccount.id,
-            amount: saleData.amount,
-            type: "INCOME",
-            description: "Venda registrada",
+            amount: expenseData.amount,
+            type: "EXPENSE",
+            description: "Despesa registrada",
             performedById: userId,
-            direction: "IN",
-            referenceId: sale.id,
+            direction: "OUT",
+            referenceId: expense.id,
             referenceMonth: month,
             referenceYear: year,
           },
         });
 
-        await tx.cashRegister.update({
-          where: { id: cashRegisterId },
-          data: {
-            totalSales: {
-              increment: saleData.amount,
-            },
-          },
-        });
-
-        return sale;
+        return expense;
       });
 
       return result;
     } catch (error) {
       console.log(error);
-      throw new AppError(500, "Erro ao registrar venda");
+      throw new AppError(400, "Erro ao tentar criar uma despesa");
     }
   };
 }

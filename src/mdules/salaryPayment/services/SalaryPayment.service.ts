@@ -1,8 +1,7 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../../../config/database.js";
-import { referenceMonth } from "../../../shared/utils/referenceMonth.js";
 import { AppError } from "../../../shared/errors/AppError.js";
-
+import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 interface PaySalaryDTO {
   employeeId: string;
   companyId: string;
@@ -19,7 +18,7 @@ export class SalaryPaymentService {
     salary,
   }: PaySalaryDTO) => {
     try {
-      const reference = referenceMonth();
+      const { month, year } = await getOpenCompetency(companyId);
 
       const result = await prisma.$transaction(async (tx) => {
         const payment = await tx.salaryPayment.create({
@@ -27,7 +26,8 @@ export class SalaryPaymentService {
             employeeId,
             companyId,
             amount: salary,
-            referenceMonth: reference,
+            referenceMonth: month,
+            referenceYear: year,
             paidByUserId: userId,
           },
         });
@@ -54,6 +54,8 @@ export class SalaryPaymentService {
             performedById: userId,
             direction: "OUT",
             referenceId: payment.id,
+            referenceMonth: month,
+            referenceYear: year,
           },
         });
 
@@ -63,7 +65,7 @@ export class SalaryPaymentService {
       return result;
     } catch (error) {
       console.log(error);
-      return "Error while trying to process salary payment.";
+      throw new AppError(400, "Error while trying to process salary payment.");
     }
   };
 }

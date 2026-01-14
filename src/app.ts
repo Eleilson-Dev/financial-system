@@ -14,6 +14,8 @@ import { employeeRouter } from "./mdules/employee/routes/routes.js";
 import { salaryPaymentRouter } from "./mdules/salaryPayment/routes/routes.js";
 import { SalaryPaymentHistoryRouter } from "./mdules/SalaryPaymentHistory/routes/routes.js";
 import { cashAccountRouter } from "./mdules/CashAccount/routes/routes.js";
+import { expenseRouter } from "./mdules/expense/routes/routes.js";
+import { monthlyClosureRouter } from "./mdules/monthlyClosure/routes/routes.js";
 
 export const app = express();
 
@@ -29,5 +31,7 @@ app.use("/financial/system", employeeRouter);
 app.use("/financial/system", salaryPaymentRouter);
 app.use("/financial/system", SalaryPaymentHistoryRouter);
 app.use("/financial/system", cashAccountRouter);
+app.use("/financial/system", expenseRouter);
+app.use("/financial/system", monthlyClosureRouter);
 
 app.use(HandleErrors.execute);

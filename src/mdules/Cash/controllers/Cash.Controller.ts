@@ -13,7 +13,7 @@ export class CashController {
       encodedToken
     );
 
-    res.status(200).json(response);
+    res.status(201).json(response);
   };
 
   showOpenCash = async (req: Request, res: Response) => {

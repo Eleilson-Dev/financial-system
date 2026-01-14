@@ -1,14 +1,15 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../../config/database.js";
 import { AppError } from "../errors/AppError.js";
-import { referenceMonth } from "../utils/referenceMonth.js";
+import { getCurrentCompetency } from "../utils/getCurrentCompetency.js";
 
 export class VerifyAlreadyPaid {
   static async execute(req: Request, res: Response, next: NextFunction) {
+    const { month, year } = getCurrentCompetency();
+
     const { employeeId } = req.query;
 
     const { userId, companyId, role } = res.locals.encodedToken;
-    const reference = referenceMonth();
 
     if (!employeeId || typeof employeeId !== "string") {
       return res.status(400).json({
@@ -38,7 +39,8 @@ export class VerifyAlreadyPaid {
       where: {
         employeeId,
         companyId,
-        referenceMonth: reference,
+        referenceMonth: month,
+        referenceYear: year,
       },
     });
 

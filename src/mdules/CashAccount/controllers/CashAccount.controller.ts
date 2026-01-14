@@ -14,8 +14,25 @@ export class CashAccountController {
     return res.status(200).json(response);
   };
 
-  ShowAccountHistory = async (req: Request, res: Response) => {
-    const response = await this.cashAccountService.ShowAccountHistory();
+  cashAdjustment = async (req: Request, res: Response) => {
+    const { userId, companyId } = res.locals.encodedToken;
+
+    const response = await this.cashAccountService.cashAdjustment(
+      req.body,
+      companyId,
+      userId
+    );
+
+    return res.status(200).json([
+      {
+        message: "success in making financial adjustments",
+      },
+      response,
+    ]);
+  };
+
+  showAccountHistory = async (req: Request, res: Response) => {
+    const response = await this.cashAccountService.showAccountHistory();
 
     return res.status(200).json(response);
   };

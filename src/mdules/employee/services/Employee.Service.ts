@@ -1,6 +1,7 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../../../config/database.js";
 import type { TCreateEmployeeSchema } from "../schema/schema.js";
+import { AppError } from "../../../shared/errors/AppError.js";
 
 @injectable()
 export class EmployeeService {
@@ -21,7 +22,7 @@ export class EmployeeService {
       return newEmployee;
     } catch (error) {
       console.log(error);
-      return "erro ao tentar registrar funcionario";
+      throw new AppError(400, "erro ao tentar registrar funcionario");
     }
   };
 
@@ -32,6 +33,4 @@ export class EmployeeService {
 
     return response;
   };
-
-  updateEmployee = async () => {};
 }

@@ -28,7 +28,7 @@ export class UserController {
     );
 
     return res
-      .status(200)
+      .status(201)
       .json([{ message: "User registration successful.", response }]);
   };
 }

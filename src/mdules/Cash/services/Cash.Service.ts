@@ -1,5 +1,6 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../../../config/database.js";
+import { AppError } from "../../../shared/errors/AppError.js";
 
 @injectable()
 export class CashService {
@@ -16,7 +17,7 @@ export class CashService {
       return cash;
     } catch (error) {
       console.log(error);
-      return { error: "Erro ao abrir um novo caixa" };
+      throw new AppError(400, "Erro ao abrir um novo caixa");
     }
   };
 
@@ -62,7 +63,7 @@ export class CashService {
       return closedCash;
     } catch (error) {
       console.log(error);
-      return "erro ao tentar fechar o caixa";
+      throw new AppError(400, "erro ao tentar fechar o caixa");
     }
   };
 }

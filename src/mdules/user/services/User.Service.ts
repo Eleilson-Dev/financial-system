@@ -2,6 +2,7 @@ import { injectable } from "tsyringe";
 import { prisma } from "../../../config/database.js";
 import type { TUserLoginResult, TUserData } from "../schemas/schema.js";
 import bcrypt from "bcrypt";
+import { AppError } from "../../../shared/errors/AppError.js";
 
 @injectable()
 export class UserService {
@@ -46,7 +47,7 @@ export class UserService {
       return userWithoutPassword;
     } catch (error) {
       console.error(error);
-      return { error: "Erro ao criar novo user" };
+      throw new AppError(400, "Erro ao criar novo user");
     }
   };
 }
