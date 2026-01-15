@@ -71,7 +71,7 @@ model Company {
   salaryPayments   SalaryPayment[]
   cashAccount      CashAccount?
   customers        Customer[]
-  customerPayments CustomerPayment[]
+  customerAccounts CustomerAccount[]
 }
 
 model CashAccount {
@@ -146,7 +146,6 @@ model User {
   monthlyClosures         MonthlyClosure[]
   employeeSalaryHistories EmployeeSalaryHistory[]
   cashAccountTransactions CashAccountTransaction[]
-  customerPayments        CustomerPayment[]
 }
 
 model CashRegister {
@@ -186,43 +185,6 @@ model Sale {
 
   cashRegisterId String
   cashRegister   CashRegister @relation(fields: [cashRegisterId], references: [id])
-
-  createdById String
-  createdBy   User      @relation(fields: [createdById], references: [id])
-  // Novo campo para vendas a prazo
-  customerId  String? // preenchido se for venda a prazo
-  customer    Customer? @relation(fields: [customerId], references: [id])
-}
-
-model Customer {
-  id        String  @id @default(uuid())
-  name      String
-  cpf       String  @unique
-  email     String?
-  phone     String?
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  sales    Sale[] // vendas a prazo vinculadas ao cliente
-  payments CustomerPayment[] // pagamentos feitos pelo cliente
-}
-
-model CustomerPayment {
-  id     String   @id @default(uuid())
-  amount Decimal  @db.Decimal(10, 2)
-  paidAt DateTime @default(now())
-
-  customerId String
-  customer   Customer @relation(fields: [customerId], references: [id])
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
-
-  referenceMonth Int
-  referenceYear  Int
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
@@ -306,4 +268,48 @@ model MonthlyClosure {
   closedBy   User   @relation(fields: [closedById], references: [id])
 
   @@unique([month, year, companyId])
+}
+
+model Customer {
+  id    String  @id @default(uuid())
+  name  String
+  cpf   String  @unique
+  phone String?
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  account CustomerAccount?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CustomerAccount {
+  id      String  @id @default(uuid())
+  balance Decimal @default(0) @db.Decimal(12, 2)
+
+  customerId String   @unique
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions CustomerAccountTransaction[]
+}
+
+model CustomerAccountTransaction {
+  id          String               @id @default(uuid())
+  amount      Decimal              @db.Decimal(10, 2)
+  direction   TransactionDirection
+  description String?
+  createdAt   DateTime             @default(now())
+
+  customerAccountId String
+  customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id])
+
+  referenceId String?
 }
