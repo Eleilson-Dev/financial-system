@@ -24,4 +24,31 @@ export class CustomerController {
 
     return res.status(201).json(response);
   };
+
+  creditSale = async (req: Request, res: Response) => {
+    const { custumerId } = req.params;
+    const { amount } = req.body;
+
+    const response = await this.customerService.creditSale(
+      custumerId as string,
+      amount
+    );
+
+    return res.status(201).json(response);
+  };
+
+  payDebit = async (req: Request, res: Response) => {
+    const { companyId, userId } = res.locals.encodedToken;
+    const { custumerId } = req.params;
+    const { amount } = req.body;
+
+    const response = await this.customerService.payDebt(
+      custumerId as string,
+      amount,
+      companyId,
+      userId
+    );
+
+    return res.status(201).json(response);
+  };
 }
