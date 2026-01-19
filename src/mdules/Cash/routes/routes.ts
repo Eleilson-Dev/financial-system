@@ -7,6 +7,7 @@ import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middlewar
 import { openCashRegisterSchema } from "../schema/schema.js";
 import { IsCashOpen } from "../../../shared/middlewares/IsCashOpen.middleware.js";
 import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.middleware.js";
+import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 
 container.registerSingleton("CashService", CashService);
 const cashController = container.resolve(CashController);
@@ -16,22 +17,30 @@ export const cashRouter = Router();
 cashRouter.post(
   "/open/cash",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   ValidateBody.execute(openCashRegisterSchema),
   IsCashOpen.execute,
-  (req, res) => cashController.openCash(req, res)
+  (req, res) => cashController.openCash(req, res),
 );
 
-cashRouter.get("/show/open/cash", VerifyToken.execute, (req, res) =>
-  cashController.showOpenCash(req, res)
+cashRouter.get(
+  "/show/open/cash",
+  VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
+  (req, res) => cashController.showOpenCash(req, res),
 );
 
-cashRouter.get("/show/close/cash", VerifyToken.execute, (req, res) =>
-  cashController.showCloseCash(req, res)
+cashRouter.get(
+  "/show/close/cash",
+  VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
+  (req, res) => cashController.showCloseCash(req, res),
 );
 
 cashRouter.post(
   "/close/cash",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   RequireOpenCash.execute,
-  (req, res) => cashController.closeCash(req, res)
+  (req, res) => cashController.closeCash(req, res),
 );

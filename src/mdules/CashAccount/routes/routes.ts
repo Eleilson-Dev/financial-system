@@ -6,6 +6,7 @@ import { CashAccountService } from "../services/CashAccount.service.js";
 import { CashAccountController } from "../controllers/CashAccount.controller.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import { createCashaAjustment } from "../schema/schema.js";
+import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 
 container.registerSingleton("CashAccountService", CashAccountService);
 const cashAccountController = container.resolve(CashAccountController);
@@ -15,21 +16,24 @@ export const cashAccountRouter = Router();
 cashAccountRouter.get(
   "/show/balance",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
-  (req, res) => cashAccountController.showBalance(req, res)
+  (req, res) => cashAccountController.showBalance(req, res),
 );
 
 cashAccountRouter.post(
   "/cash/adjustment",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
   ValidateBody.execute(createCashaAjustment),
-  (req, res) => cashAccountController.cashAdjustment(req, res)
+  (req, res) => cashAccountController.cashAdjustment(req, res),
 );
 
 cashAccountRouter.get(
   "/show/account/history",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
-  (req, res) => cashAccountController.showAccountHistory(req, res)
+  (req, res) => cashAccountController.showAccountHistory(req, res),
 );

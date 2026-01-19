@@ -6,6 +6,7 @@ import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import { createSaleSchema } from "../schema/schema.js";
 import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.middleware.js";
+import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 
 container.registerSingleton("SaleService", SaleService);
 const saleController = container.resolve(SaleController);
@@ -15,7 +16,8 @@ export const saleRouter = Router();
 saleRouter.post(
   "/register/sale",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   ValidateBody.execute(createSaleSchema),
   RequireOpenCash.execute,
-  (req, res) => saleController.registerSale(req, res)
+  (req, res) => saleController.registerSale(req, res),
 );

@@ -8,20 +8,20 @@ export class SalaryPaymentHistoryService {
   salaryIncrease = async (
     employeeId: string,
     newSalaryData: any,
-    userId: string
+    userId: string,
   ) => {
     const employee = await prisma.employee.findUnique({
       where: { id: employeeId },
     });
 
     if (!employee) {
-      throw new AppError(404, "Funcionário não encontrado");
+      throw new AppError(404, "Employee not found");
     }
 
     const oldSalary = employee.salary;
 
     if (oldSalary.lte(0)) {
-      throw new AppError(400, "Funcionário não possui salário válido");
+      throw new AppError(400, "Employee does not have a valid salary.");
     }
 
     const newSalary = new Prisma.Decimal(newSalaryData);
@@ -29,7 +29,7 @@ export class SalaryPaymentHistoryService {
     if (newSalary.lte(oldSalary)) {
       throw new AppError(
         400,
-        "Novo salário deve ser maior que o salário atual"
+        "The new salary should be higher than the current salary.",
       );
     }
 

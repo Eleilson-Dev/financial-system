@@ -7,24 +7,24 @@ import { VerifyAdmin } from "../../../shared/middlewares/VerifyAdm.middleware.js
 import { IsEmployeeExist } from "../../../shared/middlewares/IsEmployeeExist.middleware.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import { salaryIncreeseSchema } from "../schema/schema.js";
+import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 
 container.registerSingleton(
   "SalaryPaymentHistoryService",
-  SalaryPaymentHistoryService
+  SalaryPaymentHistoryService,
 );
 const salaryPaymentHistoryController = container.resolve(
-  SalaryPaymentHistoryController
+  SalaryPaymentHistoryController,
 );
 
 export const SalaryPaymentHistoryRouter = Router();
 
-salaryPaymentHistoryController;
-
 SalaryPaymentHistoryRouter.post(
-  "/salary/increase",
+  "/salary/increase/:employeeId",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
   IsEmployeeExist.execute,
   ValidateBody.execute(salaryIncreeseSchema),
-  (req, res) => salaryPaymentHistoryController.salaryIncreese(req, res)
+  (req, res) => salaryPaymentHistoryController.salaryIncreese(req, res),
 );

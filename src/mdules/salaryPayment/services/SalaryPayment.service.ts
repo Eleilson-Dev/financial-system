@@ -45,7 +45,7 @@ export class SalaryPaymentService {
           where: { companyId: companyId },
         });
 
-        await tx.cashAccountTransaction.create({
+        const cashAccountTransaction = await tx.cashAccountTransaction.create({
           data: {
             cashAccountId: cashAccount.id,
             amount: salary,
@@ -59,7 +59,7 @@ export class SalaryPaymentService {
           },
         });
 
-        return payment;
+        return [payment, cashAccountTransaction];
       });
 
       return result;

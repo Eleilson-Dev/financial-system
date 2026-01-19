@@ -61,6 +61,18 @@ enum TransactionType {
   ADJUSTMENT
 }
 
+enum CashRegisterEntryReferenceType {
+  SALE
+  CUSTOMER_ACCOUNT
+  MANUAL_ADJUST
+  TRANSFER
+}
+
+enum CustomerTransactionReferenceType {
+  DEBT
+  PAYMENT
+}
+
 model Company {
   id        String   @id @default(uuid())
   name      String
@@ -77,56 +89,6 @@ model Company {
   cashAccount      CashAccount?
   customers        Customer[]
   customerAccounts CustomerAccount[]
-}
-
-model CashAccount {
-  id      String  @id @default(uuid())
-  balance Decimal @db.Decimal(12, 2)
-
-  companyId String  @unique
-  company   Company @relation(fields: [companyId], references: [id])
-
-  updatedAt               DateTime                 @updatedAt
-  cashAccountTransactions CashAccountTransaction[]
-}
-
-model CashAccountTransaction {
-  id            String      @id @default(uuid())
-  cashAccountId String
-  cashAccount   CashAccount @relation(fields: [cashAccountId], references: [id])
-
-  direction   TransactionDirection // IN | OUT
-  type        TransactionType // INCOME | EXPENSE | SALARY_PAYMENT | SALE
-  amount      Decimal              @db.Decimal(12, 2)
-  description String?
-  createdAt   DateTime             @default(now())
-
-  paymentMethod PaymentMethod
-
-  referenceMonth Int // 1 a 12
-  referenceYear  Int
-
-  referenceId String?
-
-  performedById String? // opcional, usuário que fez a operação
-  performedBy   User?   @relation(fields: [performedById], references: [id])
-}
-
-model Expense {
-  id          String          @id @default(uuid())
-  description String
-  amount      Decimal         @db.Decimal(10, 2)
-  category    ExpenseCategory
-  createdAt   DateTime        @default(now())
-
-  referenceMonth Int // 1 a 12
-  referenceYear  Int
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
-
-  createdById String?
-  createdBy   User?   @relation("UserExpenses", fields: [createdById], references: [id])
 }
 
 model User {
@@ -155,6 +117,54 @@ model User {
   cashAccountTransactions CashAccountTransaction[]
 }
 
+model CashAccount {
+  id      String  @id @default(uuid())
+  balance Decimal @db.Decimal(12, 2)
+
+  companyId String  @unique
+  company   Company @relation(fields: [companyId], references: [id])
+
+  updatedAt               DateTime                 @updatedAt
+  cashAccountTransactions CashAccountTransaction[]
+}
+
+model CashAccountTransaction {
+  id            String      @id @default(uuid())
+  cashAccountId String
+  cashAccount   CashAccount @relation(fields: [cashAccountId], references: [id])
+
+  direction   TransactionDirection // IN | OUT
+  type        TransactionType // INCOME | EXPENSE | SALARY_PAYMENT | SALE
+  amount      Decimal              @db.Decimal(12, 2)
+  description String?
+  createdAt   DateTime             @default(now())
+
+  referenceMonth Int
+  referenceYear  Int
+
+  referenceId String?
+
+  performedById String?
+  performedBy   User?   @relation(fields: [performedById], references: [id])
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  description String
+  amount      Decimal         @db.Decimal(10, 2)
+  category    ExpenseCategory
+  createdAt   DateTime        @default(now())
+
+  referenceMonth Int // 1 a 12
+  referenceYear  Int
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdById String?
+  createdBy   User?   @relation("UserExpenses", fields: [createdById], references: [id])
+}
+
 model CashRegister {
   id String @id @default(uuid())
 
@@ -169,7 +179,8 @@ model CashRegister {
   totalDebit  Decimal @default(0) @db.Decimal(12, 2)
   totalCredit Decimal @default(0) @db.Decimal(12, 2)
 
-  totalSales Decimal @default(0) @db.Decimal(12, 2)
+  // Total geral de entradas
+  totalInflow Decimal @default(0) @db.Decimal(12, 2)
 
   closingAmount Decimal? @db.Decimal(12, 2)
 
@@ -184,23 +195,40 @@ model CashRegister {
   closedById String?
   closedBy   User?   @relation("ClosedCash", fields: [closedById], references: [id])
 
-  sales Sale[]
+  entries CashRegisterEntry[]
+}
+
+model CashRegisterEntry {
+  id String @id @default(uuid())
+
+  amount        Decimal              @db.Decimal(10, 2)
+  direction     TransactionDirection // IN | OUT
+  paymentMethod PaymentMethod?
+  description   String?
+  createdAt     DateTime             @default(now())
+
+  referenceMonth Int
+  referenceYear  Int
+
+  cashRegisterId String
+  cashRegister   CashRegister @relation(fields: [cashRegisterId], references: [id])
+
+  referenceType CashRegisterEntryReferenceType?
+  referenceId   String?
 }
 
 model Sale {
-  id            String        @id @default(uuid())
+  id String @id @default(uuid())
+
   amount        Decimal       @db.Decimal(10, 2)
   paymentMethod PaymentMethod
   createdAt     DateTime      @default(now())
 
-  referenceMonth Int // 1 a 12
+  referenceMonth Int
   referenceYear  Int
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
-
-  cashRegisterId String
-  cashRegister   CashRegister @relation(fields: [cashRegisterId], references: [id])
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
@@ -297,8 +325,9 @@ model Customer {
 
   account CustomerAccount?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  customerDebts CustomerDebt[]
 }
 
 model CustomerAccount {
@@ -317,6 +346,19 @@ model CustomerAccount {
   transactions CustomerAccountTransaction[]
 }
 
+model CustomerDebt {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  referenceMonth Int
+  referenceYear  Int
+
+  amount      Decimal  @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+  description String?
+}
+
 model CustomerAccountTransaction {
   id          String               @id @default(uuid())
   amount      Decimal              @db.Decimal(10, 2)
@@ -324,10 +366,12 @@ model CustomerAccountTransaction {
   description String?
   createdAt   DateTime             @default(now())
 
-  paymentMethod PaymentMethod
+  referenceMonth Int
+  referenceYear  Int
 
   customerAccountId String
   customerAccount   CustomerAccount @relation(fields: [customerAccountId], references: [id])
 
-  referenceId String?
+  referenceType CustomerTransactionReferenceType?
+  referenceId   String?
 }

@@ -27,7 +27,7 @@ export class VerifyToken {
     if (!user || !company) {
       throw new AppError(
         401,
-        "Sua sessão não é mais válida. Faça login novamente."
+        "Your session is no longer valid. Please log in again.",
       );
     }
 

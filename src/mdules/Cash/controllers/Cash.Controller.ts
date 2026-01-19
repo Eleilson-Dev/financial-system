@@ -10,7 +10,7 @@ export class CashController {
 
     const response = await this.cashService.openCash(
       req.body.openingAmount,
-      encodedToken
+      encodedToken,
     );
 
     res.status(201).json(response);

@@ -5,13 +5,15 @@ import type { CashAccountService } from "../services/CashAccount.service.js";
 @injectable()
 export class CashAccountController {
   constructor(
-    @inject("CashAccountService") private cashAccountService: CashAccountService
+    @inject("CashAccountService")
+    private cashAccountService: CashAccountService,
   ) {}
 
   showBalance = async (req: Request, res: Response) => {
     const response = await this.cashAccountService.showBalance();
+    const monthlyClosureStatus = res.locals.monthlyClosureStatus;
 
-    return res.status(200).json(response);
+    return res.status(200).json([response, monthlyClosureStatus]);
   };
 
   cashAdjustment = async (req: Request, res: Response) => {
@@ -20,7 +22,7 @@ export class CashAccountController {
     const response = await this.cashAccountService.cashAdjustment(
       req.body,
       companyId,
-      userId
+      userId,
     );
 
     return res.status(200).json([

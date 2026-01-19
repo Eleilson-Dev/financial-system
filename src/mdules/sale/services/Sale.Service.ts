@@ -3,6 +3,8 @@ import { prisma } from "../../../config/database.js";
 import type { TCreateSaleSchema } from "../schema/schema.js";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
+import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
+import { Prisma } from "../../../../generated/prisma/client.js";
 
 @injectable()
 export class SaleService {
@@ -16,11 +18,24 @@ export class SaleService {
           data: {
             amount: saleData.amount,
             paymentMethod: saleData.paymentMethod,
-            cashRegisterId,
-            companyId,
-            createdById: userId,
             referenceMonth: month,
             referenceYear: year,
+            companyId,
+            createdById: userId,
+          },
+        });
+
+        await tx.cashRegisterEntry.create({
+          data: {
+            amount: saleData.amount,
+            direction: "IN",
+            paymentMethod: saleData.paymentMethod,
+            description: "Venda registrada",
+            cashRegisterId,
+            referenceMonth: month,
+            referenceYear: year,
+            referenceType: "SALE",
+            referenceId: sale.id,
           },
         });
 
@@ -31,7 +46,7 @@ export class SaleService {
         if (!cashAccount) {
           throw new AppError(
             500,
-            "Erro estrutural: empresa sem conta financeira"
+            "Structural error: company without a financial account.",
           );
         }
 
@@ -46,7 +61,7 @@ export class SaleService {
           data: {
             cashAccountId: cashAccount.id,
             amount: saleData.amount,
-            type: "INCOME",
+            type: "SALE",
             description: "Venda registrada",
             performedById: userId,
             direction: "IN",
@@ -58,11 +73,10 @@ export class SaleService {
 
         await tx.cashRegister.update({
           where: { id: cashRegisterId },
-          data: {
-            totalSales: {
-              increment: saleData.amount,
-            },
-          },
+          data: buildCashRegisterUpdate(
+            saleData.paymentMethod,
+            new Prisma.Decimal(saleData.amount),
+          ),
         });
 
         return sale;

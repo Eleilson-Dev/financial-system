@@ -24,7 +24,7 @@ export class CashService {
   showOpenCash = async (companyId: string) => {
     const response = await prisma.cashRegister.findMany({
       where: { status: "OPEN", companyId },
-      include: { sales: true },
+      include: { entries: true },
     });
 
     return response;
@@ -33,7 +33,7 @@ export class CashService {
   showCloseCash = async (companyId: string) => {
     const response = await prisma.cashRegister.findMany({
       where: { status: "CLOSED", companyId },
-      include: { sales: true },
+      include: { entries: true },
     });
 
     return response;
@@ -41,26 +41,44 @@ export class CashService {
 
   closeCash = async (cashData: any) => {
     try {
-      const { userId, cashOpen } = cashData;
+      const result = await prisma.$transaction(async (tx) => {
+        const { userId, cashOpen } = cashData;
 
-      const totalSalesAggregate = await prisma.sale.aggregate({
-        where: { cashRegisterId: cashOpen },
-        _sum: { amount: true },
+        const cashRegister = await tx.cashRegister.findUnique({
+          where: { id: cashOpen },
+          select: {
+            openingAmount: true,
+            totalCash: true,
+            status: true,
+          },
+        });
+
+        if (!cashRegister) {
+          throw new AppError(404, "Caixa não encontrado");
+        }
+
+        if (cashRegister.status !== "OPEN") {
+          throw new AppError(400, "Caixa já está fechado");
+        }
+
+        const closingAmount = cashRegister.openingAmount.plus(
+          cashRegister.totalCash,
+        );
+
+        const closeCash = await tx.cashRegister.update({
+          where: { id: cashOpen },
+          data: {
+            closingAmount,
+            closedAt: new Date(),
+            closedById: userId,
+            status: "CLOSED",
+          },
+        });
+
+        return closeCash;
       });
 
-      const totalSales = Number(totalSalesAggregate._sum.amount ?? 0);
-
-      const closedCash = await prisma.cashRegister.update({
-        where: { id: cashOpen },
-        data: {
-          closingAmount: totalSales,
-          closedAt: new Date(),
-          closedById: userId,
-          status: "CLOSED",
-        },
-      });
-
-      return closedCash;
+      return result;
     } catch (error) {
       console.log(error);
       throw new AppError(400, "erro ao tentar fechar o caixa");

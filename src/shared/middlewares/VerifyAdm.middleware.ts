@@ -8,7 +8,7 @@ export class VerifyAdmin {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      throw new AppError(401, "Nenhum usuário logado");
+      throw new AppError(401, "No users logged in");
     }
 
     if (role !== "OWNER" && role !== "ADMIN") {

@@ -6,6 +6,7 @@ import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.
 import { VerifyAdmin } from "../../../shared/middlewares/VerifyAdm.middleware.js";
 import { VerifyAlreadyPaid } from "../../../shared/middlewares/VerifyAlreadyPaid.middleware.js";
 import { VerifySalaryPayment } from "../../../shared/middlewares/VerifySalaryPayment.middleware.js";
+import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 
 container.registerSingleton("SalaryPayment", SalaryPaymentService);
 const salaryPaymentController = container.resolve(SalaryPaymentController);
@@ -13,10 +14,11 @@ const salaryPaymentController = container.resolve(SalaryPaymentController);
 export const salaryPaymentRouter = Router();
 
 salaryPaymentRouter.post(
-  "/salary/payment",
+  "/salary/payment/:employeeId",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
   VerifyAlreadyPaid.execute,
   VerifySalaryPayment.execute,
-  (req, res) => salaryPaymentController.paySalary(req, res)
+  (req, res) => salaryPaymentController.paySalary(req, res),
 );

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PaymentMethod } from "../../../../generated/prisma/enums.js";
 
 export const createCustomerSchema = z.object({
   name: z
@@ -17,4 +18,9 @@ export const createCustomerSchema = z.object({
 
 export const saleCreditSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),
+});
+
+export const salePaymentSchema = z.object({
+  amount: z.number().positive("Amount must be greater than zero"),
+  paymentMethod: z.nativeEnum(PaymentMethod),
 });

@@ -8,7 +8,7 @@ import { getLastUnclosedMonth } from "../../../shared/utils/getLastUnclosedMonth
 export class MonthlyClosureController {
   constructor(
     @inject("MonthlyClosureService")
-    private monthlyClosureService: MonthlyClosureService
+    private monthlyClosureService: MonthlyClosureService,
   ) {}
 
   closeMonth = async (req: Request, res: Response) => {
@@ -29,29 +29,10 @@ export class MonthlyClosureController {
     });
   };
 
-  closeLateMonth = async (req: Request, res: Response) => {
-    const { companyId, userId } = res.locals.encodedToken;
-
-    const { month, year } = await getLastUnclosedMonth(companyId);
-
-    const response = await this.monthlyClosureService.closeLateMonth(
-      companyId,
-      userId,
-      month,
-      year
-    );
-
-    return res.status(201).json({
-      message: "Month successfully completed.",
-      response,
-    });
-  };
-
   showMonthClosed = async (req: Request, res: Response) => {
     const { companyId } = res.locals.encodedToken;
-    const response = await this.monthlyClosureService.showMonthClosed(
-      companyId
-    );
+    const response =
+      await this.monthlyClosureService.showMonthClosed(companyId);
 
     return res.status(200).json(response);
   };

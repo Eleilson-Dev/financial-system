@@ -9,7 +9,7 @@ export class ExpenseService {
   registerExpense = async (
     expenseData: TCreateExpenseSchema,
     userId: string,
-    companyId: string
+    companyId: string,
   ) => {
     try {
       const { month, year } = await getOpenCompetency(companyId);
@@ -33,7 +33,7 @@ export class ExpenseService {
         if (!cashAccount) {
           throw new AppError(
             500,
-            "Erro estrutural: empresa sem conta financeira"
+            "Structural error: company without a financial account.",
           );
         }
 
@@ -44,7 +44,7 @@ export class ExpenseService {
           },
         });
 
-        await tx.cashAccountTransaction.create({
+        const cashAccountTransaction = await tx.cashAccountTransaction.create({
           data: {
             cashAccountId: cashAccount.id,
             amount: expenseData.amount,
@@ -58,7 +58,7 @@ export class ExpenseService {
           },
         });
 
-        return expense;
+        return [expense, cashAccountTransaction];
       });
 
       return result;

@@ -6,7 +6,7 @@ import type { SalaryPaymentService } from "../services/SalaryPayment.service.js"
 @injectable()
 export class SalaryPaymentController {
   constructor(
-    @inject("SalaryPayment") private salaryPaymentService: SalaryPaymentService
+    @inject("SalaryPayment") private salaryPaymentService: SalaryPaymentService,
   ) {}
   paySalary = async (req: Request, res: Response) => {
     const localKeys = {

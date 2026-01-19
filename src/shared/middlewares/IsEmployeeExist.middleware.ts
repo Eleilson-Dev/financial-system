@@ -4,12 +4,12 @@ import { AppError } from "../errors/AppError.js";
 
 export class IsEmployeeExist {
   static async execute(req: Request, res: Response, next: NextFunction) {
-    const { employeeId } = req.query;
+    const { employeeId } = req.params;
     const { companyId } = res.locals.encodedToken;
 
     if (!employeeId || typeof employeeId !== "string") {
       return res.status(400).json({
-        message: "employeeId é obrigatório e deve ser uma string",
+        message: "employeeId is required and must be a string.",
       });
     }
 
@@ -22,7 +22,7 @@ export class IsEmployeeExist {
     });
 
     if (!employee) {
-      throw new AppError(404, "Funcionário não encontrado ou inativo");
+      throw new AppError(404, "Employee not found or inactive");
     }
 
     next();

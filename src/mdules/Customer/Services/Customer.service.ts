@@ -2,6 +2,8 @@ import { injectable } from "tsyringe";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { prisma } from "../../../config/database.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
+import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
+import { Prisma } from "../../../../generated/prisma/client.js";
 
 @injectable()
 export class CustomerService {
@@ -18,24 +20,37 @@ export class CustomerService {
     return result;
   };
 
-  registerCustomer = async (custumerData: any, companyId: string) => {
+  showCustomer = async (companyId: string, customerId: string) => {
+    const result = prisma.$transaction(async (tx) => {
+      const customer = await tx.customer.findUnique({
+        where: { id: customerId, companyId },
+        include: { account: true, customerDebts: true },
+      });
+
+      return customer;
+    });
+
+    return result;
+  };
+
+  registerCustomer = async (customerData: any, companyId: string) => {
     try {
       const result = prisma.$transaction(async (tx) => {
-        const custumer = await tx.customer.create({
+        const customer = await tx.customer.create({
           data: {
             companyId,
-            name: custumerData.name,
-            cpf: custumerData.cpf,
-            phone: custumerData.phone,
+            name: customerData.name,
+            cpf: customerData.cpf,
+            phone: customerData.phone,
           },
           include: { account: true },
         });
 
-        const custumerAccount = await tx.customerAccount.create({
-          data: { customerId: custumer.id, balance: 0, companyId },
+        const customerAccount = await tx.customerAccount.create({
+          data: { customerId: customer.id, balance: 0, companyId },
         });
 
-        return [custumer, custumerAccount];
+        return [customer, customerAccount];
       });
 
       return result;
@@ -45,7 +60,11 @@ export class CustomerService {
     }
   };
 
-  creditSale = async (customerId: string, amount: number) => {
+  creditSale = async (
+    customerId: string,
+    amount: number,
+    companyId: string,
+  ) => {
     try {
       const result = prisma.$transaction(async (tx) => {
         const account = await tx.customerAccount.findUnique({
@@ -53,7 +72,7 @@ export class CustomerService {
         });
 
         if (!account) {
-          throw new AppError(404, "Conta do cliente não encontrada");
+          throw new AppError(404, "Customer account not found.");
         }
 
         const updatedAccount = await tx.customerAccount.update({
@@ -65,16 +84,32 @@ export class CustomerService {
           },
         });
 
+        const { month, year } = await getOpenCompetency(companyId);
+
+        const customerDebt = await tx.customerDebt.create({
+          data: {
+            customerId,
+            referenceMonth: month,
+            referenceYear: year,
+            amount: amount,
+            description: "Venda a prazo",
+          },
+        });
+
         const transaction = await tx.customerAccountTransaction.create({
           data: {
             customerAccountId: account.id,
             amount,
             direction: "OUT",
             description: "Venda a prazo",
+            referenceMonth: month,
+            referenceYear: year,
+            referenceType: "DEBT",
+            referenceId: customerDebt.id,
           },
         });
 
-        return { updatedAccount, transaction };
+        return { updatedAccount, customerDebt, transaction };
       });
 
       return result;
@@ -88,7 +123,9 @@ export class CustomerService {
     customerId: string,
     amountPaid: number,
     companyId: string,
-    userId: string
+    userId: string,
+    cashRegisterId: string,
+    paymentMethod: any,
   ) => {
     try {
       const result = await prisma.$transaction(async (tx) => {
@@ -101,12 +138,38 @@ export class CustomerService {
         });
 
         if (!customerAccount) {
-          throw new AppError(404, "Conta do cliente não encontrada");
+          throw new AppError(404, "Customer account not found.");
         }
 
         const customerAccountUpdated = await tx.customerAccount.update({
           where: { id: customerAccount.id },
           data: { balance: { decrement: amountPaid } },
+        });
+
+        const { month, year } = await getOpenCompetency(companyId);
+
+        const customerDebt = await tx.customerDebt.create({
+          data: {
+            customerId,
+            referenceMonth: month,
+            referenceYear: year,
+            amount: amountPaid,
+            description: `Pagamento recebido`,
+          },
+        });
+
+        await tx.cashRegisterEntry.create({
+          data: {
+            amount: amountPaid,
+            direction: "IN",
+            paymentMethod: paymentMethod,
+            description: `Pagamento recebido - NOME: ${custumer?.name} CPF: ${custumer?.cpf}`,
+            cashRegisterId,
+            referenceMonth: month,
+            referenceYear: year,
+            referenceType: "CUSTOMER_ACCOUNT",
+            referenceId: customerDebt.id,
+          },
         });
 
         const customerAccountTransaction =
@@ -116,7 +179,10 @@ export class CustomerService {
               amount: amountPaid,
               direction: "IN",
               description: `Pagamento recebido - NOME: ${custumer?.name} CPF: ${custumer?.cpf}`,
-              referenceId: customerAccount.id,
+              referenceId: customerDebt.id,
+              referenceType: "PAYMENT",
+              referenceMonth: month,
+              referenceYear: year,
             },
           });
 
@@ -127,11 +193,16 @@ export class CustomerService {
         if (!cashAccount) {
           throw new AppError(
             500,
-            "Erro estrutural: empresa sem conta financeira"
+            "Structural error: company without a financial account.",
           );
         }
 
-        const { month, year } = await getOpenCompetency(companyId);
+        await tx.cashAccount.update({
+          where: { companyId },
+          data: {
+            balance: { increment: amountPaid },
+          },
+        });
 
         const cashAccountTransaction = await tx.cashAccountTransaction.create({
           data: {
@@ -147,10 +218,19 @@ export class CustomerService {
           },
         });
 
+        await tx.cashRegister.update({
+          where: { id: cashRegisterId },
+          data: buildCashRegisterUpdate(
+            paymentMethod,
+            new Prisma.Decimal(amountPaid),
+          ),
+        });
+
         return [
-          customerAccountUpdated,
-          customerAccountTransaction,
-          cashAccountTransaction,
+          { customerAccountUpdated },
+          { customerDebt },
+          { customerAccountTransaction },
+          { cashAccountTransaction },
         ];
       });
 
@@ -158,7 +238,7 @@ export class CustomerService {
     } catch (error) {
       throw new AppError(
         400,
-        "Erro ao tentar realizar o pagamento de valor pendente"
+        "Error while trying to make a payment for an outstanding amount.",
       );
     }
   };

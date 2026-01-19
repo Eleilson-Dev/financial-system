@@ -6,21 +6,24 @@ import type { SalaryPaymentHistoryService } from "../services/SalaryPaymentHisto
 export class SalaryPaymentHistoryController {
   constructor(
     @inject("SalaryPaymentHistoryService")
-    private salaryPaymentHistoryService: SalaryPaymentHistoryService
+    private salaryPaymentHistoryService: SalaryPaymentHistoryService,
   ) {}
 
   salaryIncreese = async (req: Request, res: Response) => {
-    const { employeeId } = req.query;
+    const { employeeId } = req.params;
     const { userId } = res.locals.encodedToken;
 
     const response = await this.salaryPaymentHistoryService.salaryIncrease(
       employeeId as string,
       req.body.salary,
-      userId
+      userId,
     );
 
     return res
       .status(200)
-      .json([{ message: "Aumento de salario efetudo com sucesso" }, response]);
+      .json([
+        { message: "Salary increase successfully implemented." },
+        response,
+      ]);
   };
 }

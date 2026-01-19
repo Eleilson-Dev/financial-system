@@ -7,13 +7,13 @@ export class VerifyAlreadyPaid {
   static async execute(req: Request, res: Response, next: NextFunction) {
     const { month, year } = getCurrentCompetency();
 
-    const { employeeId } = req.query;
+    const { employeeId } = req.params;
 
     const { userId, companyId, role } = res.locals.encodedToken;
 
     if (!employeeId || typeof employeeId !== "string") {
       return res.status(400).json({
-        message: "employeeId é obrigatório e deve ser uma string",
+        message: "employeeId is required and must be a string.",
       });
     }
 
@@ -26,13 +26,13 @@ export class VerifyAlreadyPaid {
     });
 
     if (!employee) {
-      throw new AppError(404, "Funcionário não encontrado ou inativo");
+      throw new AppError(404, "Employee not found or inactive");
     }
 
     const salary = employee.salary.toNumber();
 
     if (!salary || salary <= 0) {
-      throw new AppError(400, "Funcionário não possui salário válido");
+      throw new AppError(400, "Employee does not have a valid salary.");
     }
 
     const alreadyPaid = await prisma.salaryPayment.findFirst({
@@ -45,7 +45,7 @@ export class VerifyAlreadyPaid {
     });
 
     if (alreadyPaid) {
-      throw new AppError(409, "Salário já foi pago este mês");
+      throw new AppError(409, "Salary has already been paid this month.");
     }
 
     res.locals = { companyId, salary, employeeId, userId };

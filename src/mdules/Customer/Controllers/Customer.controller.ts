@@ -5,7 +5,7 @@ import type { CustomerService } from "../Services/Customer.service.js";
 @injectable()
 export class CustomerController {
   constructor(
-    @inject("CustomerService") private customerService: CustomerService
+    @inject("CustomerService") private customerService: CustomerService,
   ) {}
 
   showAllCustomer = async (req: Request, res: Response) => {
@@ -15,23 +15,37 @@ export class CustomerController {
     return res.status(200).json(response);
   };
 
+  showCustomer = async (req: Request, res: Response) => {
+    const { customerId } = req.params;
+    const { companyId } = res.locals.encodedToken;
+
+    const response = await this.customerService.showCustomer(
+      companyId,
+      customerId as string,
+    );
+
+    return res.status(200).json(response);
+  };
+
   registerCustomer = async (req: Request, res: Response) => {
     const { companyId } = res.locals.encodedToken;
     const response = await this.customerService.registerCustomer(
       req.body,
-      companyId
+      companyId,
     );
 
     return res.status(201).json(response);
   };
 
   creditSale = async (req: Request, res: Response) => {
-    const { custumerId } = req.params;
+    const { customerId } = req.params;
     const { amount } = req.body;
+    const { companyId } = res.locals.encodedToken;
 
     const response = await this.customerService.creditSale(
-      custumerId as string,
-      amount
+      customerId as string,
+      amount,
+      companyId,
     );
 
     return res.status(201).json(response);
@@ -39,14 +53,17 @@ export class CustomerController {
 
   payDebit = async (req: Request, res: Response) => {
     const { companyId, userId } = res.locals.encodedToken;
-    const { custumerId } = req.params;
-    const { amount } = req.body;
+    const cashRegisterId = res.locals.cashOpenData.cashOpen;
+    const { customerId } = req.params;
+    const { amount, paymentMethod } = req.body;
 
     const response = await this.customerService.payDebt(
-      custumerId as string,
+      customerId as string,
       amount,
       companyId,
-      userId
+      userId,
+      cashRegisterId,
+      paymentMethod,
     );
 
     return res.status(201).json(response);

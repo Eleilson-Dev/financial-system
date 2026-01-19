@@ -5,8 +5,14 @@ import { CustomerController } from "../Controllers/Customer.controller.js";
 import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.js";
 import { VerifyAdmin } from "../../../shared/middlewares/VerifyAdm.middleware.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
-import { createCustomerSchema, saleCreditSchema } from "../Schema/schema.js";
+import {
+  createCustomerSchema,
+  saleCreditSchema,
+  salePaymentSchema,
+} from "../Schema/schema.js";
 import { AlreadyPayDebit } from "../../../shared/middlewares/AlreadyPayDebit.middleware.js";
+import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.middleware.js";
+import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 
 container.registerSingleton("CustomerService", CustomerService);
 const customerController = container.resolve(CustomerController);
@@ -16,29 +22,40 @@ export const customerRouter = Router();
 customerRouter.post(
   "/register/customer",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
   ValidateBody.execute(createCustomerSchema),
-  (req, res) => customerController.registerCustomer(req, res)
+  (req, res) => customerController.registerCustomer(req, res),
 );
 
 customerRouter.get(
-  "/show/custumers",
+  "/show/customers",
   VerifyToken.execute,
-  VerifyAdmin.execute,
-  (req, res) => customerController.showAllCustomer(req, res)
+  AttachMonthlyClosureStatus.execute,
+  (req, res) => customerController.showAllCustomer(req, res),
+);
+
+customerRouter.get(
+  "/show/customer/:customerId",
+  VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
+  (req, res) => customerController.showCustomer(req, res),
 );
 
 customerRouter.post(
-  "/customers/credit-sale/:custumerId",
+  "/customers/credit-sale/:customerId",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   ValidateBody.execute(saleCreditSchema),
-  (req, res) => customerController.creditSale(req, res)
+  (req, res) => customerController.creditSale(req, res),
 );
 
 customerRouter.post(
-  "/customers/paydebit/:custumerId",
+  "/customers/paydebit/:customerId",
   VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
   AlreadyPayDebit.execute,
-  ValidateBody.execute(saleCreditSchema),
-  (req, res) => customerController.payDebit(req, res)
+  ValidateBody.execute(salePaymentSchema),
+  RequireOpenCash.execute,
+  (req, res) => customerController.payDebit(req, res),
 );

@@ -20,17 +20,18 @@ export class MonthlyClosureService {
       });
 
       if (alreadyClosed) {
-        throw new AppError(409, "Este mês já foi fechado");
+        throw new AppError(409, "This month has already closed.");
       }
 
       const { start, end } = getCompetencyPeriod(month, year);
 
-      const [sales, expenses, salaries] = await Promise.all([
-        tx.sale.aggregate({
+      const [inflow, expenses, salaries] = await Promise.all([
+        tx.cashRegisterEntry.aggregate({
           where: {
-            companyId,
+            direction: "IN",
             referenceMonth: month,
             referenceYear: year,
+            cashRegister: { companyId },
           },
           _sum: { amount: true },
         }),
@@ -52,7 +53,7 @@ export class MonthlyClosureService {
         }),
       ]);
 
-      const totalRevenue = Number(sales._sum.amount ?? 0);
+      const totalRevenue = Number(inflow._sum.amount ?? 0);
       const totalExpenses = Number(expenses._sum.amount ?? 0);
       const totalSalaries = Number(salaries._sum.amount ?? 0);
 
@@ -86,51 +87,6 @@ export class MonthlyClosureService {
     });
 
     return result;
-  };
-
-  closeLateMonth = async (
-    companyId: string,
-    userId: string,
-    month: number,
-    year: number
-  ) => {
-    const { start, end } = getCompetencyPeriod(month, year);
-
-    const [sales, expenses, salaries] = await prisma.$transaction([
-      prisma.sale.aggregate({
-        where: { companyId, createdAt: { gte: start, lte: end } },
-        _sum: { amount: true },
-      }),
-      prisma.expense.aggregate({
-        where: { companyId, createdAt: { gte: start, lte: end } },
-        _sum: { amount: true },
-      }),
-      prisma.salaryPayment.aggregate({
-        where: { companyId, paidAt: { gte: start, lte: end } },
-        _sum: { amount: true },
-      }),
-    ]);
-
-    const closure = await prisma.monthlyClosure.create({
-      data: {
-        month,
-        year,
-        periodStart: start,
-        periodEnd: end,
-        totalRevenue: sales._sum.amount || 0,
-        totalExpenses: expenses._sum.amount || 0,
-        totalSalaries: salaries._sum.amount || 0,
-        profit:
-          (Number(sales._sum.amount) || 0) -
-          (Number(expenses._sum.amount) || 0) -
-          (Number(salaries._sum.amount) || 0),
-        isEarlyClosure: false,
-        companyId,
-        closedById: userId,
-      },
-    });
-
-    return closure;
   };
 
   showMonthClosed = async (companyId: string) => {

@@ -5,35 +5,35 @@ import { Prisma } from "../../../generated/prisma/client.js";
 
 export class AlreadyPayDebit {
   static async execute(req: Request, res: Response, next: NextFunction) {
-    const { custumerId } = req.params;
+    const { customerId } = req.params;
     const { amount } = req.body;
 
     const amountDecimal = new Prisma.Decimal(amount);
 
-    if (!custumerId) {
-      throw new AppError(400, "Cliente não informado");
+    if (!customerId) {
+      throw new AppError(400, "Customer not informed");
     }
 
-    const custumer = await prisma.customer.findUnique({
-      where: { id: custumerId },
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
       include: {
         account: true,
       },
     });
 
-    if (!custumer) {
-      throw new AppError(404, "Cliente não encontrado");
+    if (!customer) {
+      throw new AppError(404, "Customer not found");
     }
 
-    if (custumer.account?.balance.lessThan(amountDecimal)) {
+    if (customer.account?.balance.lessThan(amountDecimal)) {
       throw new AppError(
         400,
-        "Valor informado é maior que a dívida do cliente"
+        "The reported value is greater than the customer's debt.",
       );
     }
 
-    if (custumer.account?.balance.equals(0)) {
-      throw new AppError(400, "Cliente não possui dívida em aberto");
+    if (customer.account?.balance.equals(0)) {
+      throw new AppError(400, "The customer has no outstanding debt.");
     }
 
     next();

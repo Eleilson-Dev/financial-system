@@ -7,7 +7,7 @@ export class VerifySalaryPayment {
     const { companyId, salary } = res.locals;
 
     if (!companyId || salary === undefined) {
-      throw new AppError(400, "Dados insuficientes para verificar pagamento");
+      throw new AppError(400, "Insufficient data to verify payment.");
     }
 
     const cashAccount = await prisma.cashAccount.findUnique({
@@ -15,11 +15,11 @@ export class VerifySalaryPayment {
     });
 
     if (!cashAccount) {
-      throw new AppError(400, "Conta financeira da empresa não encontrada");
+      throw new AppError(400, "Company financial account not found.");
     }
 
     if (cashAccount.balance.toNumber() < salary) {
-      throw new AppError(400, "Saldo insuficiente para pagar o salário");
+      throw new AppError(400, "Insufficient funds to pay the salary.");
     }
 
     next();

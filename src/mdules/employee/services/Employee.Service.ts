@@ -7,7 +7,7 @@ import { AppError } from "../../../shared/errors/AppError.js";
 export class EmployeeService {
   createEmployee = async (
     employeeData: TCreateEmployeeSchema,
-    companyId: any
+    companyId: any,
   ) => {
     try {
       const newEmployee = await prisma.employee.create({
