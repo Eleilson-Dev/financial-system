@@ -32,17 +32,13 @@ export class SalaryPaymentService {
           },
         });
 
-        await tx.cashAccount.update({
+        const cashAccount = await tx.cashAccount.update({
           where: { companyId },
           data: {
             balance: {
               decrement: salary,
             },
           },
-        });
-
-        const cashAccount = await tx.cashAccount.findFirstOrThrow({
-          where: { companyId: companyId },
         });
 
         const cashAccountTransaction = await tx.cashAccountTransaction.create({
