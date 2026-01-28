@@ -19,7 +19,7 @@ export class VerifyLoginUser {
     if (req.body.password) {
       const compare = await bcrypt.compare(
         req.body.password,
-        user.password as string
+        user.password as string,
       );
 
       if (!compare) {
@@ -34,11 +34,12 @@ export class VerifyLoginUser {
         role: user.role,
       },
       process.env.JWT_SECRET as string,
-      { expiresIn: "24h" }
+      { expiresIn: "24h" },
     );
 
     res.locals.userLoginResult = {
       userId: user.id,
+      userName: user.name,
       companyId: user.companyId,
       role: user.role,
       accessToken,
