@@ -21,9 +21,9 @@ export class CashService {
     }
   };
 
-  showOpenCash = async (companyId: string) => {
+  showOpenCashById = async (companyId: string, userId: string) => {
     const response = await prisma.cashRegister.findMany({
-      where: { status: "OPEN", companyId },
+      where: { status: "OPEN", companyId, openedById: userId },
       include: { entries: true },
     });
 

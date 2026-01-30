@@ -7,7 +7,7 @@ export class IsCashOpen {
     const { companyId, userId } = res.locals.encodedToken;
 
     const response = await prisma.cashRegister.findFirst({
-      where: { status: "OPEN", companyId },
+      where: { status: "OPEN", companyId, openedById: userId },
     });
 
     response ? (res.locals.cashRegisterId = response.id) : null;

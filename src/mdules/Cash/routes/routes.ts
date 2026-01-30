@@ -27,7 +27,7 @@ cashRouter.get(
   "/show/open/cash",
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
-  (req, res) => cashController.showOpenCash(req, res),
+  (req, res) => cashController.showOpenCashById(req, res),
 );
 
 cashRouter.get(

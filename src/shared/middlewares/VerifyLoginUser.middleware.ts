@@ -13,7 +13,7 @@ export class VerifyLoginUser {
     });
 
     if (!user) {
-      throw new AppError(404, "Email or password does not match");
+      throw new AppError(401, "Email or password does not match");
     }
 
     if (req.body.password) {

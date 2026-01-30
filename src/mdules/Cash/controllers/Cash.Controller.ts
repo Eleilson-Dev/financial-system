@@ -16,9 +16,9 @@ export class CashController {
     res.status(201).json(response);
   };
 
-  showOpenCash = async (req: Request, res: Response) => {
-    const { companyId } = res.locals.encodedToken;
-    const response = await this.cashService.showOpenCash(companyId);
+  showOpenCashById = async (req: Request, res: Response) => {
+    const { companyId, userId } = res.locals.encodedToken;
+    const response = await this.cashService.showOpenCashById(companyId, userId);
 
     return res.status(200).json(response);
   };
