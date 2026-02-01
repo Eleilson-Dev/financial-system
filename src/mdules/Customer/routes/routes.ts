@@ -15,6 +15,7 @@ import { AlreadyPayDebit } from "../../../shared/middlewares/AlreadyPayDebit.mid
 import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.middleware.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 import { IsCpfExits } from "../../../shared/middlewares/IsCpfExists.middleware copy.js";
+import { ValidateQuery } from "../../../shared/middlewares/ValidateQuery.middleware copy.js";
 
 container.registerSingleton("CustomerService", CustomerService);
 const customerController = container.resolve(CustomerController);
@@ -42,7 +43,7 @@ customerRouter.get(
   "/show/customer",
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
-  ValidateBody.execute(showCustomerSchema),
+  ValidateQuery.execute(showCustomerSchema),
   (req, res) => customerController.showCustomer(req, res),
 );
 

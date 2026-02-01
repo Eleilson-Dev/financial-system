@@ -21,34 +21,15 @@ export class CustomerService {
     return result;
   };
 
-  showCustomer = async (
-    companyId: string,
-    data: { cpf?: string; name?: string },
-  ) => {
-    const orConditions: Prisma.CustomerWhereInput[] = [];
+  showCustomer = async (companyId: string, search: string) => {
+    const normalizedSearch = normalizeText(search);
 
-    if (data.cpf) {
-      orConditions.push({ cpf: data.cpf });
-    }
-
-    if (data.name) {
-      const normalizedName = normalizeText(data.name);
-
-      orConditions.push({
-        nameNormalized: {
-          startsWith: normalizedName,
-        },
-      });
-    }
-
-    if (!orConditions.length) {
-      throw new AppError(400, "Informe CPF ou Nome");
-    }
-
-    const customer = await prisma.customer.findMany({
+    const customers = await prisma.customer.findMany({
       where: {
         companyId,
-        OR: orConditions,
+        nameNormalized: {
+          startsWith: normalizedSearch,
+        },
       },
       include: {
         account: true,
@@ -56,11 +37,7 @@ export class CustomerService {
       },
     });
 
-    if (!customer) {
-      throw new AppError(404, "Cliente não encontrado");
-    }
-
-    return customer;
+    return customers;
   };
 
   registerCustomer = async (customerData: any, companyId: string) => {

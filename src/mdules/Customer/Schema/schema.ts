@@ -25,12 +25,6 @@ export const salePaymentSchema = z.object({
   paymentMethod: z.nativeEnum(PaymentMethod),
 });
 
-export const showCustomerSchema = z
-  .object({
-    cpf: z.string().trim().min(11, "CPF inválido").max(14).optional(),
-    name: z.string().trim().min(2, "Nome muito curto").optional(),
-  })
-  .refine((data) => data.cpf || data.name, {
-    message: "Informe CPF ou Nome",
-    path: ["cpf", "name"],
-  });
+export const showCustomerSchema = z.object({
+  search: z.string().trim().min(2, "Informe o nome do cliente"),
+});

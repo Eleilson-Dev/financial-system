@@ -17,11 +17,9 @@ export class CustomerController {
 
   showCustomer = async (req: Request, res: Response) => {
     const { companyId } = res.locals.encodedToken;
+    const { search } = res.locals.query as { search: string };
 
-    const response = await this.customerService.showCustomer(
-      companyId,
-      req.body,
-    );
+    const response = await this.customerService.showCustomer(companyId, search);
 
     return res.status(200).json(response);
   };
