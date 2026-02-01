@@ -12,6 +12,7 @@ export class CashService {
           companyId: encodedToken.companyId,
           openedById: encodedToken.userId,
         },
+        include: { entries: true },
       });
 
       return cash;

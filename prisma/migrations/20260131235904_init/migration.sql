@@ -212,6 +212,7 @@ CREATE TABLE "MonthlyClosure" (
 CREATE TABLE "Customer" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "nameNormalized" TEXT NOT NULL,
     "cpf" TEXT NOT NULL,
     "phone" TEXT,
     "companyId" TEXT NOT NULL,

@@ -315,10 +315,11 @@ model MonthlyClosure {
 }
 
 model Customer {
-  id    String  @id @default(uuid())
-  name  String
-  cpf   String  @unique
-  phone String?
+  id             String  @id @default(uuid())
+  name           String
+  nameNormalized String  @db.VarChar(255)
+  cpf            String  @unique
+  phone          String?
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
@@ -328,6 +329,8 @@ model Customer {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   customerDebts CustomerDebt[]
+
+  @@index([companyId, nameNormalized])
 }
 
 model CustomerAccount {

@@ -16,12 +16,11 @@ export class CustomerController {
   };
 
   showCustomer = async (req: Request, res: Response) => {
-    const { customerId } = req.params;
     const { companyId } = res.locals.encodedToken;
 
     const response = await this.customerService.showCustomer(
       companyId,
-      customerId as string,
+      req.body,
     );
 
     return res.status(200).json(response);

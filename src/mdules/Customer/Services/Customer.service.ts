@@ -4,6 +4,7 @@ import { prisma } from "../../../config/database.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
+import { normalizeText } from "../../../shared/utils/normalizeText.js";
 
 @injectable()
 export class CustomerService {
@@ -20,26 +21,58 @@ export class CustomerService {
     return result;
   };
 
-  showCustomer = async (companyId: string, customerId: string) => {
-    const result = prisma.$transaction(async (tx) => {
-      const customer = await tx.customer.findUnique({
-        where: { id: customerId, companyId },
-        include: { account: true, customerDebts: true },
-      });
+  showCustomer = async (
+    companyId: string,
+    data: { cpf?: string; name?: string },
+  ) => {
+    const orConditions: Prisma.CustomerWhereInput[] = [];
 
-      return customer;
+    if (data.cpf) {
+      orConditions.push({ cpf: data.cpf });
+    }
+
+    if (data.name) {
+      const normalizedName = normalizeText(data.name);
+
+      orConditions.push({
+        nameNormalized: {
+          startsWith: normalizedName,
+        },
+      });
+    }
+
+    if (!orConditions.length) {
+      throw new AppError(400, "Informe CPF ou Nome");
+    }
+
+    const customer = await prisma.customer.findMany({
+      where: {
+        companyId,
+        OR: orConditions,
+      },
+      include: {
+        account: true,
+        customerDebts: true,
+      },
     });
 
-    return result;
+    if (!customer) {
+      throw new AppError(404, "Cliente não encontrado");
+    }
+
+    return customer;
   };
 
   registerCustomer = async (customerData: any, companyId: string) => {
     try {
       const result = prisma.$transaction(async (tx) => {
+        const normalize = normalizeText(customerData.name);
+
         const customer = await tx.customer.create({
           data: {
             companyId,
             name: customerData.name,
+            nameNormalized: normalize,
             cpf: customerData.cpf,
             phone: customerData.phone,
           },
@@ -56,7 +89,7 @@ export class CustomerService {
       return result;
     } catch (error) {
       console.log(error);
-      throw new AppError(400, "Erro ao tentar registrar um cliente");
+      throw new AppError(400, "Error while trying to register a client.");
     }
   };
 

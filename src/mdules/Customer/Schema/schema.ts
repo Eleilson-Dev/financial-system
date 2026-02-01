@@ -24,3 +24,13 @@ export const salePaymentSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),
   paymentMethod: z.nativeEnum(PaymentMethod),
 });
+
+export const showCustomerSchema = z
+  .object({
+    cpf: z.string().trim().min(11, "CPF inválido").max(14).optional(),
+    name: z.string().trim().min(2, "Nome muito curto").optional(),
+  })
+  .refine((data) => data.cpf || data.name, {
+    message: "Informe CPF ou Nome",
+    path: ["cpf", "name"],
+  });

@@ -9,10 +9,12 @@ import {
   createCustomerSchema,
   saleCreditSchema,
   salePaymentSchema,
+  showCustomerSchema,
 } from "../Schema/schema.js";
 import { AlreadyPayDebit } from "../../../shared/middlewares/AlreadyPayDebit.middleware.js";
 import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.middleware.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
+import { IsCpfExits } from "../../../shared/middlewares/IsCpfExists.middleware copy.js";
 
 container.registerSingleton("CustomerService", CustomerService);
 const customerController = container.resolve(CustomerController);
@@ -25,6 +27,7 @@ customerRouter.post(
   AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
   ValidateBody.execute(createCustomerSchema),
+  IsCpfExits.execute,
   (req, res) => customerController.registerCustomer(req, res),
 );
 
@@ -36,9 +39,10 @@ customerRouter.get(
 );
 
 customerRouter.get(
-  "/show/customer/:customerId",
+  "/show/customer",
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
+  ValidateBody.execute(showCustomerSchema),
   (req, res) => customerController.showCustomer(req, res),
 );
 
