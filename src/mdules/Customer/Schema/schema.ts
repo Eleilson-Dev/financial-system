@@ -8,11 +8,22 @@ export const createCustomerSchema = z.object({
 
   cpf: z
     .string({ message: "CPF é obrigatório" })
-    .regex(/^\d{11}$/, "CPF deve conter 11 números"),
+    .transform((val) => val.replace(/\D/g, "")) // remove tudo que não é número
+    .refine((val) => val.length === 11, { message: "CPF deve ter 11 números" }),
 
   phone: z
     .string()
     .regex(/^\d{10,11}$/, "Telefone inválido")
+    .optional(),
+
+  address: z
+    .object({
+      rua: z.string().min(2, "Informe a rua"),
+      numero: z.string().min(1, "Informe o número"),
+      bairro: z.string().optional(),
+      cidade: z.string().optional(),
+      cep: z.string().optional(),
+    })
     .optional(),
 });
 

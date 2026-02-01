@@ -13,6 +13,7 @@ export class CustomerService {
       const allCustomers = await tx.customer.findMany({
         where: { companyId },
         include: { account: true },
+        take: 10,
       });
 
       return allCustomers;
@@ -52,6 +53,7 @@ export class CustomerService {
             nameNormalized: normalize,
             cpf: customerData.cpf,
             phone: customerData.phone,
+            address: customerData.address,
           },
           include: { account: true },
         });

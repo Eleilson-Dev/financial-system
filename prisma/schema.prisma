@@ -329,6 +329,7 @@ model Customer {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   customerDebts CustomerDebt[]
+  address       Json?
 
   @@index([companyId, nameNormalized])
 }
