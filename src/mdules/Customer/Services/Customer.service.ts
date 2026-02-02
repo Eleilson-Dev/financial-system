@@ -13,7 +13,7 @@ export class CustomerService {
       const allCustomers = await tx.customer.findMany({
         where: { companyId },
         include: { account: true },
-        take: 10,
+        take: 15,
       });
 
       return allCustomers;
@@ -78,7 +78,7 @@ export class CustomerService {
     companyId: string,
   ) => {
     try {
-      const result = prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx) => {
         const account = await tx.customerAccount.findUnique({
           where: { customerId },
         });
@@ -222,7 +222,7 @@ export class CustomerService {
             amount: amountPaid,
             direction: "IN",
             type: "INCOME",
-            description: `Pagamento de recebido - NOME: ${custumer?.name} CPF: ${custumer?.cpf}`,
+            description: `Pagamento recebido - NOME: ${custumer?.name} CPF: ${custumer?.cpf}`,
             referenceMonth: month,
             referenceYear: year,
             performedById: userId,
