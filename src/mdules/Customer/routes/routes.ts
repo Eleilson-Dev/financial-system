@@ -56,7 +56,7 @@ customerRouter.post(
 );
 
 customerRouter.post(
-  "/customers/paydebit/:customerId",
+  "/customers/paydebit-sale/:customerId",
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
   AlreadyPayDebit.execute,
