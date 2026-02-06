@@ -195,6 +195,10 @@ model CashRegister {
   closedById String?
   closedBy   User?   @relation("ClosedCash", fields: [closedById], references: [id])
 
+  countedCashAmount  Decimal? @db.Decimal(12, 2)
+  expectedCashAmount Decimal? @db.Decimal(12, 2)
+  cashDifference     Decimal? @db.Decimal(12, 2)
+
   entries CashRegisterEntry[]
 }
 
