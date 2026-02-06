@@ -171,7 +171,7 @@ model CashRegister {
   openedAt DateTime  @default(now())
   closedAt DateTime?
 
-  openingAmount Decimal @db.Decimal(12, 2)
+  openingAmount Decimal @default(0) @db.Decimal(12, 2)
 
   // Totais por forma de pagamento
   totalCash   Decimal @default(0) @db.Decimal(12, 2)
@@ -195,9 +195,9 @@ model CashRegister {
   closedById String?
   closedBy   User?   @relation("ClosedCash", fields: [closedById], references: [id])
 
-  countedCashAmount  Decimal? @db.Decimal(12, 2)
-  expectedCashAmount Decimal? @db.Decimal(12, 2)
-  cashDifference     Decimal? @db.Decimal(12, 2)
+  countedCashAmount  Decimal? @default(0) @db.Decimal(12, 2)
+  expectedCashAmount Decimal? @default(0) @db.Decimal(12, 2)
+  cashDifference     Decimal? @default(0) @db.Decimal(12, 2)
 
   entries CashRegisterEntry[]
 }

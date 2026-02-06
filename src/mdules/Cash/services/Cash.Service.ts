@@ -4,11 +4,12 @@ import { AppError } from "../../../shared/errors/AppError.js";
 
 @injectable()
 export class CashService {
-  openCash = async (openingAmount: number, encodedToken: any) => {
+  openCash = async (amount: number, encodedToken: any) => {
     try {
       const cash = await prisma.cashRegister.create({
         data: {
-          openingAmount: openingAmount,
+          openingAmount: amount,
+          expectedCashAmount: amount,
           companyId: encodedToken.companyId,
           openedById: encodedToken.userId,
         },

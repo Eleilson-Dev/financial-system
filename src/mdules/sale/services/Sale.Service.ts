@@ -71,6 +71,11 @@ export class SaleService {
           },
         });
 
+        const data = buildCashRegisterUpdate(
+          saleData.paymentMethod,
+          new Prisma.Decimal(saleData.amount),
+        );
+
         await tx.cashRegister.update({
           where: { id: cashRegisterId },
           data: buildCashRegisterUpdate(
@@ -78,6 +83,8 @@ export class SaleService {
             new Prisma.Decimal(saleData.amount),
           ),
         });
+
+        console.log(data, "to no service de sale");
 
         return sale;
       });

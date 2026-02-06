@@ -230,6 +230,11 @@ export class CustomerService {
           },
         });
 
+        const data = buildCashRegisterUpdate(
+          paymentMethod,
+          new Prisma.Decimal(amountPaid),
+        );
+
         await tx.cashRegister.update({
           where: { id: cashRegisterId },
           data: buildCashRegisterUpdate(
@@ -237,6 +242,8 @@ export class CustomerService {
             new Prisma.Decimal(amountPaid),
           ),
         });
+
+        console.log(data, "to no service de customer");
 
         return [
           { customerAccountUpdated },

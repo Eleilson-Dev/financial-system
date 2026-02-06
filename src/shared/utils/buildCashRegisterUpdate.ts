@@ -12,6 +12,7 @@ export const buildCashRegisterUpdate = (
   switch (paymentMethod) {
     case "CASH":
       data.totalCash = { increment: amount };
+      data.expectedCashAmount = { increment: amount };
       break;
     case "PIX":
       data.totalPix = { increment: amount };
