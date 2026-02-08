@@ -4,7 +4,10 @@ import { CashService } from "../services/Cash.Service.js";
 import { CashController } from "../controllers/Cash.Controller.js";
 import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
-import { openCashRegisterSchema } from "../schema/schema.js";
+import {
+  closeCashRegisterSchema,
+  openCashRegisterSchema,
+} from "../schema/schema.js";
 import { IsCashOpen } from "../../../shared/middlewares/IsCashOpen.middleware.js";
 import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.middleware.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
@@ -42,5 +45,6 @@ cashRouter.post(
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
   RequireOpenCash.execute,
+  ValidateBody.execute(closeCashRegisterSchema),
   (req, res) => cashController.closeCash(req, res),
 );

@@ -31,7 +31,10 @@ export class CashController {
   };
 
   closeCash = async (req: Request, res: Response) => {
-    const response = await this.cashService.closeCash(res.locals.cashOpenData);
+    const response = await this.cashService.closeCash(
+      res.locals.cashOpenData,
+      req.body.countedCashAmount,
+    );
 
     return res.status(200).json({ message: "cash closed", response });
   };

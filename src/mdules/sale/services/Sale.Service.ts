@@ -84,15 +84,13 @@ export class SaleService {
           ),
         });
 
-        console.log(data, "to no service de sale");
-
         return sale;
       });
 
       return result;
     } catch (error) {
       console.log(error);
-      throw new AppError(500, "Erro ao registrar venda");
+      throw new AppError(500, "Error registering sale");
     }
   };
 }

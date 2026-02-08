@@ -46,7 +46,7 @@ export class CashService {
     return response;
   };
 
-  closeCash = async (cashData: any) => {
+  closeCash = async (cashData: any, countedCashAmount: any) => {
     try {
       const result = await prisma.$transaction(async (tx) => {
         const { userId, cashOpen } = cashData;
@@ -55,26 +55,32 @@ export class CashService {
           where: { id: cashOpen },
           select: {
             openingAmount: true,
+            expectedCashAmount: true,
             totalCash: true,
             status: true,
           },
         });
 
         if (!cashRegister) {
-          throw new AppError(404, "Caixa não encontrado");
+          throw new AppError(404, "Cash not found");
         }
 
         if (cashRegister.status !== "OPEN") {
-          throw new AppError(400, "Caixa já está fechado");
+          throw new AppError(400, "Cash already closed");
         }
 
         const closingAmount = cashRegister.openingAmount.plus(
           cashRegister.totalCash,
         );
 
+        const difference =
+          countedCashAmount - Number(cashRegister.expectedCashAmount);
+
         const closeCash = await tx.cashRegister.update({
           where: { id: cashOpen },
           data: {
+            cashDifference: difference,
+            countedCashAmount: countedCashAmount,
             closingAmount,
             closedAt: new Date(),
             closedById: userId,

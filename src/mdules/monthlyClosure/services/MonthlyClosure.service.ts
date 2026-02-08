@@ -61,7 +61,7 @@ export class MonthlyClosureService {
 
       const expectedCloseDate = dayjs()
         .year(year)
-        .month(month)
+        .month(month - 1)
         .date(5)
         .endOf("day");
 

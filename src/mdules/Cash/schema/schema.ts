@@ -15,15 +15,7 @@ export const openCashRegisterSchema = z.object({
 });
 
 export const closeCashRegisterSchema = z.object({
-  closingAmount: z
-    .any()
-    .refine((val) => val !== undefined, {
-      message: "closingAmount é obrigatório",
-    })
-    .refine((val) => typeof val === "number", {
-      message: "closingAmount deve ser um número",
-    })
-    .refine((val) => val >= 0, {
-      message: "closingAmount não pode ser negativo",
-    }),
+  countedCashAmount: z.coerce.number().refine((value) => !Number.isNaN(value), {
+    message: "Informe o valor conferido no caixa",
+  }),
 });
