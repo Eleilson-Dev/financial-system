@@ -1,20 +1,16 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../../config/database.js";
 import { AppError } from "../errors/AppError.js";
-import { getCurrentCompetency } from "../utils/getCurrentCompetency.js";
 
 export class VerifyAlreadyPaid {
   static async execute(req: Request, res: Response, next: NextFunction) {
-    const { month, year } = getCurrentCompetency();
+    const { month, year } = res.locals.openCompetency;
 
+    const { companyId } = res.locals.encodedToken;
     const { employeeId } = req.params;
 
-    const { userId, companyId, role } = res.locals.encodedToken;
-
-    if (!employeeId || typeof employeeId !== "string") {
-      return res.status(400).json({
-        message: "employeeId is required and must be a string.",
-      });
+    if (!employeeId) {
+      throw new AppError(400, "employeeId is required.");
     }
 
     const employee = await prisma.employee.findFirst({
@@ -31,7 +27,7 @@ export class VerifyAlreadyPaid {
 
     const salary = employee.salary.toNumber();
 
-    if (!salary || salary <= 0) {
+    if (salary <= 0) {
       throw new AppError(400, "Employee does not have a valid salary.");
     }
 
@@ -48,7 +44,8 @@ export class VerifyAlreadyPaid {
       throw new AppError(409, "Salary has already been paid this month.");
     }
 
-    res.locals = { companyId, salary, employeeId, userId };
+    res.locals.employeeSalary = salary;
+    res.locals.employeeId = employeeId;
 
     next();
   }

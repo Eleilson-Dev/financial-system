@@ -5,15 +5,17 @@ export class AttachMonthlyClosureStatus {
   static async execute(req: Request, res: Response, next: NextFunction) {
     const { role, companyId } = res.locals.encodedToken;
 
-    // Operator não vê
     if (role !== "OWNER" && role !== "ADMIN") {
       return next();
     }
 
-    const status = await getMonthlyClosureStatus(companyId);
+    const closureStatus = await getMonthlyClosureStatus(companyId);
+    res.locals.monthlyClosureStatus = closureStatus;
 
-    // injeta globalmente
-    res.locals.monthlyClosureStatus = status;
+    res.locals.openCompetency = {
+      month: closureStatus.month,
+      year: closureStatus.year,
+    };
 
     next();
   }

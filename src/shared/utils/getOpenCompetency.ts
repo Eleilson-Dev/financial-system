@@ -1,36 +1,38 @@
-import dayjs from "dayjs";
 import { prisma } from "../../config/database.js";
 
 export async function getOpenCompetency(companyId: string) {
-  const today = dayjs();
-
-  // competência natural baseada na data
-  let month = today.date() <= 5 ? today.month() : today.month() + 1;
-  let year = today.year();
-
-  if (month === 0) {
-    month = 12;
-    year -= 1;
-  }
-
-  // verifica se já foi fechado
-  const alreadyClosed = await prisma.monthlyClosure.findFirst({
-    where: {
-      companyId,
-      month,
-      year,
-    },
+  const lastClosed = await prisma.monthlyClosure.findFirst({
+    where: { companyId },
+    orderBy: [{ year: "desc" }, { month: "desc" }],
   });
 
-  // se já fechou, empurra para o próximo mês
-  if (alreadyClosed) {
-    month += 1;
+  // Caso 1: nunca fechou nada
+  if (!lastClosed) {
+    const oldestRecord = await prisma.cashRegisterEntry.findFirst({
+      where: { cashRegister: { companyId } },
+      orderBy: [{ referenceYear: "asc" }, { referenceMonth: "asc" }],
+    });
 
-    if (month > 12) {
-      month = 1;
-      year += 1;
+    if (!oldestRecord) {
+      throw new Error("No records found for open competency.");
     }
+
+    return {
+      month: oldestRecord.referenceMonth,
+      year: oldestRecord.referenceYear,
+    };
   }
 
-  return { month, year };
+  // Caso 2: já existe fechamento
+  const next = {
+    month: lastClosed.month + 1,
+    year: lastClosed.year,
+  };
+
+  if (next.month > 12) {
+    next.month = 1;
+    next.year += 1;
+  }
+
+  return next;
 }

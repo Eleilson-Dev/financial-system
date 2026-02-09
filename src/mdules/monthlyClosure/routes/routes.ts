@@ -6,6 +6,8 @@ import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.
 import { VerifyAdmin } from "../../../shared/middlewares/VerifyAdm.middleware.js";
 import { VerifyNoPendingSalaries } from "../../../shared/middlewares/VerifyNoPendingSalaries.middleware.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
+import { ResolveOpenCompetency } from "../../../shared/middlewares/ResolveOpenCompetency.middleware.js";
+import { VerifyCloseWindow } from "../../../shared/middlewares/VerifyCloseWindow.middleware.js";
 
 container.registerSingleton("MonthlyClosureService", MonthlyClosureService);
 const monthlyClosureController = container.resolve(MonthlyClosureController);
@@ -17,6 +19,8 @@ monthlyClosureRouter.post(
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
+  ResolveOpenCompetency.execute,
+  VerifyCloseWindow.execute,
   VerifyNoPendingSalaries.execute,
   (req, res) => monthlyClosureController.closeMonth(req, res),
 );

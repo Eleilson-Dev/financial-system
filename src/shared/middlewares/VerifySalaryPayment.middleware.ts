@@ -4,7 +4,8 @@ import { AppError } from "../errors/AppError.js";
 
 export class VerifySalaryPayment {
   static async execute(req: Request, res: Response, next: NextFunction) {
-    const { companyId, salary } = res.locals;
+    const { companyId } = res.locals.encodedToken;
+    const salary = res.locals.employeeSalary;
 
     if (!companyId || salary === undefined) {
       throw new AppError(400, "Insufficient data to verify payment.");

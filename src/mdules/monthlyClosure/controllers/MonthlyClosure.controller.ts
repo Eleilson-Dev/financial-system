@@ -1,8 +1,6 @@
 import type { Request, Response } from "express";
 import { inject, injectable } from "tsyringe";
 import { MonthlyClosureService } from "../services/MonthlyClosure.service.js";
-import { getCurrentCompetency } from "../../../shared/utils/getCurrentCompetency.js";
-import { getLastUnclosedMonth } from "../../../shared/utils/getLastUnclosedMonth.js";
 
 @injectable()
 export class MonthlyClosureController {
@@ -13,8 +11,7 @@ export class MonthlyClosureController {
 
   closeMonth = async (req: Request, res: Response) => {
     const { companyId, userId } = res.locals.encodedToken;
-
-    const { month, year } = getCurrentCompetency();
+    const { month, year } = res.locals.openCompetency;
 
     const response = await this.monthlyClosureService.closeMonth({
       companyId,

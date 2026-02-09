@@ -9,11 +9,12 @@ export class SalaryPaymentController {
     @inject("SalaryPayment") private salaryPaymentService: SalaryPaymentService,
   ) {}
   paySalary = async (req: Request, res: Response) => {
+    const { companyId, userId } = res.locals.encodedToken;
     const localKeys = {
+      userId,
+      companyId,
       employeeId: res.locals.employeeId,
-      userId: res.locals.userId,
-      companyId: res.locals.companyId,
-      salary: res.locals.salary,
+      salary: res.locals.employeeSalary,
     };
 
     const response = await this.salaryPaymentService.paySalary(localKeys);

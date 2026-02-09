@@ -7,6 +7,7 @@ import { VerifyAdmin } from "../../../shared/middlewares/VerifyAdm.middleware.js
 import { VerifyAlreadyPaid } from "../../../shared/middlewares/VerifyAlreadyPaid.middleware.js";
 import { VerifySalaryPayment } from "../../../shared/middlewares/VerifySalaryPayment.middleware.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
+import { ResolveOpenCompetency } from "../../../shared/middlewares/ResolveOpenCompetency.middleware.js";
 
 container.registerSingleton("SalaryPayment", SalaryPaymentService);
 const salaryPaymentController = container.resolve(SalaryPaymentController);
@@ -18,6 +19,7 @@ salaryPaymentRouter.post(
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
+  ResolveOpenCompetency.execute,
   VerifyAlreadyPaid.execute,
   VerifySalaryPayment.execute,
   (req, res) => salaryPaymentController.paySalary(req, res),
