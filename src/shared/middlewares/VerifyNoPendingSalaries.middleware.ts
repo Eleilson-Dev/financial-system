@@ -25,8 +25,6 @@ export class VerifyNoPendingSalaries {
       },
     });
 
-    console.log(unpaidCount);
-
     if (unpaidCount > 0) {
       throw new AppError(
         409,
