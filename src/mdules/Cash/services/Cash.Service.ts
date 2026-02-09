@@ -40,7 +40,7 @@ export class CashService {
   showCloseCash = async (companyId: string) => {
     const response = await prisma.cashRegister.findMany({
       where: { status: "CLOSED", companyId },
-      include: { entries: true },
+      orderBy: { closedAt: "desc" },
     });
 
     return response;
