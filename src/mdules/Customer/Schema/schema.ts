@@ -27,6 +27,16 @@ export const createCustomerSchema = z.object({
     .optional(),
 });
 
+export const deleteEntrySchema = z.object({
+  password: z
+    .string()
+    .min(6, "Senha deve ter pelo menos 6 caracteres")
+    .max(100)
+    .refine((val) => !val.includes(" "), {
+      message: "Senha não pode conter espaços",
+    }),
+});
+
 export const saleCreditSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),
 });

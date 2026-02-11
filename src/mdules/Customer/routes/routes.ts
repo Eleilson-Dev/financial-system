@@ -7,6 +7,7 @@ import { VerifyAdmin } from "../../../shared/middlewares/VerifyAdm.middleware.js
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import {
   createCustomerSchema,
+  deleteEntrySchema,
   saleCreditSchema,
   salePaymentSchema,
   showCustomerSchema,
@@ -16,6 +17,7 @@ import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.mid
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 import { IsCpfExits } from "../../../shared/middlewares/IsCpfExists.middleware copy.js";
 import { ValidateQuery } from "../../../shared/middlewares/ValidateQuery.middleware copy.js";
+import { ValidatePrivilegedPassword } from "../../../shared/middlewares/ValidatePrivilegedPassword.middleware.js";
 
 container.registerSingleton("CustomerService", CustomerService);
 const customerController = container.resolve(CustomerController);
@@ -63,4 +65,14 @@ customerRouter.post(
   ValidateBody.execute(salePaymentSchema),
   RequireOpenCash.execute,
   (req, res) => customerController.payDebit(req, res),
+);
+
+customerRouter.delete(
+  "/customers/delete-entry/:entryId",
+  VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
+  ValidateBody.execute(deleteEntrySchema),
+  RequireOpenCash.execute,
+  ValidatePrivilegedPassword.execute,
+  (req, res) => customerController.deleteEntry(req, res),
 );

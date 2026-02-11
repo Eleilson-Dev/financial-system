@@ -226,14 +226,9 @@ export class CustomerService {
             referenceMonth: month,
             referenceYear: year,
             performedById: userId,
-            referenceId: customerAccountTransaction.id,
+            referenceId: customerDebt.id,
           },
         });
-
-        const data = buildCashRegisterUpdate(
-          paymentMethod,
-          new Prisma.Decimal(amountPaid),
-        );
 
         await tx.cashRegister.update({
           where: { id: cashRegisterId },
@@ -242,8 +237,6 @@ export class CustomerService {
             new Prisma.Decimal(amountPaid),
           ),
         });
-
-        console.log(data, "to no service de customer");
 
         return [
           { customerAccountUpdated },
@@ -259,6 +252,109 @@ export class CustomerService {
         400,
         "Error while trying to make a payment for an outstanding amount.",
       );
+    }
+  };
+
+  deleteEntry = async (entryId: string, companyId: string, userId: string) => {
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        const entry = await tx.cashRegisterEntry.findUnique({
+          where: { id: entryId },
+        });
+
+        if (!entry) {
+          throw new AppError(404, "Transaction not found");
+        }
+
+        if (entry.referenceType !== "CUSTOMER_ACCOUNT") {
+          throw new AppError(400, "Invalid transaction type");
+        }
+
+        const openCash = await tx.cashRegister.findFirst({
+          where: {
+            companyId,
+            openedById: userId,
+            status: "OPEN",
+          },
+        });
+
+        if (!openCash) {
+          throw new AppError(400, "No open cash register found");
+        }
+
+        if (!entry.referenceId) {
+          throw new AppError(400, "Invalid referenceId");
+        }
+
+        const customerDebt = await tx.customerDebt.findUnique({
+          where: { id: entry.referenceId },
+        });
+
+        if (!customerDebt) {
+          throw new AppError(404, "Customer debt not found");
+        }
+
+        const customerAccount = await tx.customerAccount.findUnique({
+          where: { customerId: customerDebt.customerId },
+        });
+
+        if (!customerAccount) {
+          throw new AppError(404, "Customer account not found");
+        }
+
+        await tx.customerAccount.update({
+          where: { id: customerAccount.id },
+          data: {
+            balance: { increment: entry.amount },
+          },
+        });
+
+        await tx.customerAccountTransaction.deleteMany({
+          where: {
+            referenceId: entry.referenceId,
+          },
+        });
+
+        await tx.cashRegisterEntry.delete({
+          where: { id: entry.id },
+        });
+
+        await tx.customerDebt.delete({
+          where: { id: customerDebt.id },
+        });
+
+        await tx.cashAccount.update({
+          where: { companyId },
+          data: {
+            balance: { decrement: entry.amount },
+          },
+        });
+
+        await tx.cashAccountTransaction.deleteMany({
+          where: {
+            referenceId: entry.referenceId,
+            type: "INCOME",
+          },
+        });
+
+        if (!entry.paymentMethod) {
+          throw new AppError(400, "Invalid paymentMethod");
+        }
+
+        await tx.cashRegister.update({
+          where: { id: openCash.id },
+          data: buildCashRegisterUpdate(
+            entry.paymentMethod,
+            new Prisma.Decimal(-entry.amount),
+          ),
+        });
+
+        return { message: "Customer payment reverted successfully" };
+      });
+
+      return result;
+    } catch (error) {
+      throw new AppError(400, "Error deleting entry");
     }
   };
 }

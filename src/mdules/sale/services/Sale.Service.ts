@@ -5,6 +5,7 @@ import { AppError } from "../../../shared/errors/AppError.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
+import bcrypt from "bcrypt";
 
 @injectable()
 export class SaleService {
@@ -71,11 +72,6 @@ export class SaleService {
           },
         });
 
-        const data = buildCashRegisterUpdate(
-          saleData.paymentMethod,
-          new Prisma.Decimal(saleData.amount),
-        );
-
         await tx.cashRegister.update({
           where: { id: cashRegisterId },
           data: buildCashRegisterUpdate(
@@ -91,6 +87,75 @@ export class SaleService {
     } catch (error) {
       console.log(error);
       throw new AppError(500, "Error registering sale");
+    }
+  };
+
+  deleteSale = async (saleId: string, companyId: string, userId: string) => {
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        const sale = await tx.sale.findFirst({
+          where: {
+            id: saleId,
+            companyId,
+          },
+        });
+
+        if (!sale || sale.companyId !== companyId) {
+          throw new AppError(404, "Sale not found");
+        }
+
+        const openCash = await tx.cashRegister.findFirst({
+          where: {
+            companyId,
+            openedById: userId,
+            status: "OPEN",
+          },
+        });
+
+        if (!openCash) {
+          throw new AppError(400, "No open cash register found");
+        }
+
+        await tx.cashRegisterEntry.deleteMany({
+          where: {
+            referenceType: "SALE",
+            referenceId: saleId,
+          },
+        });
+
+        await tx.cashAccountTransaction.deleteMany({
+          where: {
+            referenceId: saleId,
+            type: "SALE",
+          },
+        });
+
+        await tx.cashAccount.update({
+          where: { companyId },
+          data: {
+            balance: { decrement: sale.amount },
+          },
+        });
+
+        await tx.cashRegister.update({
+          where: { id: openCash.id },
+          data: buildCashRegisterUpdate(
+            sale.paymentMethod,
+            new Prisma.Decimal(-sale.amount),
+          ),
+        });
+
+        await tx.sale.delete({
+          where: { id: saleId },
+        });
+
+        return { message: "Sale deleted successfully" };
+      });
+
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw new AppError(500, "Error deleting sale");
     }
   };
 }

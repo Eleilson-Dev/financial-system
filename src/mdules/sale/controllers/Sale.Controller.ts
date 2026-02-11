@@ -14,4 +14,17 @@ export class SaleController {
 
     res.status(201).json(response);
   };
+
+  deleteSale = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { companyId, userId } = res.locals.encodedToken;
+
+    const response = await this.saleService.deleteSale(
+      id as string,
+      companyId,
+      userId,
+    );
+
+    return res.status(200).json(response);
+  };
 }

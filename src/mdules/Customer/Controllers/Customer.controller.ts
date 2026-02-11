@@ -65,4 +65,17 @@ export class CustomerController {
 
     return res.status(201).json(response);
   };
+
+  deleteEntry = async (req: Request, res: Response) => {
+    const { entryId } = req.params;
+    const { companyId, userId } = res.locals.encodedToken;
+
+    const response = await this.customerService.deleteEntry(
+      entryId as string,
+      companyId,
+      userId,
+    );
+
+    return res.status(200).json(response);
+  };
 }
