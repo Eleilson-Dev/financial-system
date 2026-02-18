@@ -14,7 +14,12 @@ export async function getOpenCompetency(companyId: string) {
     });
 
     if (!oldestRecord) {
-      throw new Error("No records found for open competency.");
+      const now = new Date();
+
+      return {
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+      };
     }
 
     return {

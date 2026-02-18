@@ -16,10 +16,11 @@ export class CompanyService {
 
   createCompany = async (
     companyData: TCreateCompany,
-    ownerData: TCreateOwner
+    ownerData: TCreateOwner,
   ) => {
     try {
       const hashedPassword = await bcrypt.hash(ownerData.password, 10);
+      const email = ownerData.email.toLowerCase();
 
       const result = prisma.$transaction(async (tx) => {
         const company = await tx.company.create({
@@ -33,7 +34,7 @@ export class CompanyService {
         const owner = await tx.user.create({
           data: {
             name: ownerData.name,
-            email: ownerData.email,
+            email,
             password: hashedPassword,
             role: "OWNER",
             companyId: company.id,
