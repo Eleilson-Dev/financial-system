@@ -1,4 +1,4 @@
-import { prisma } from "../../config/database.js";
+import { prisma } from "../../config/db/database.js";
 
 export const getLastUnclosedMonth = async (companyId: string) => {
   const lastClosed = await prisma.monthlyClosure.findFirst({

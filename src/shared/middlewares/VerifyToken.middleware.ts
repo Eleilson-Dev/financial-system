@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../errors/AppError.js";
 import jwt from "jsonwebtoken";
-import { prisma } from "../../config/database.js";
+import { prisma } from "../../config/db/database.js";
 
 export class VerifyToken {
   static async execute(req: Request, res: Response, next: NextFunction) {

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import dayjs from "dayjs";
-import { prisma } from "../../config/database.js";
+import { prisma } from "../../config/db/database.js";
 import { AppError } from "../errors/AppError.js";
 import { getClosureDeadline } from "../utils/getClosureDeadline.js";
 import { getOpenCompetency } from "../utils/getOpenCompetency.js";

@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { prisma } from "../../config/database.js";
+import { prisma } from "../../config/db/database.js";
 import { AppError } from "../errors/AppError.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";

@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { prisma } from "../../config/database.js";
+import { prisma } from "../../config/db/database.js";
 import bcrypt from "bcrypt";
 import { AppError } from "../errors/AppError.js";
 
