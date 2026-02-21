@@ -31,7 +31,7 @@ export class CompanyService {
           data: { balance: 0, companyId: company.id },
         });
 
-        const owner = await tx.user.create({
+        const newOwner = await tx.user.create({
           data: {
             name: ownerData.name,
             email,
@@ -41,9 +41,9 @@ export class CompanyService {
           },
         });
 
-        const { password, ...restOwner } = owner;
+        const { password, ...owner } = newOwner;
 
-        return { company, cashAccount, restOwner };
+        return { company, cashAccount, owner };
       });
 
       return result;

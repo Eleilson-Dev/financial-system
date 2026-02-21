@@ -5,7 +5,7 @@ import type { CompanyService } from "../services/Company.Service.js";
 @injectable()
 export class CompanyController {
   constructor(
-    @inject("CompanyService") private companyService: CompanyService
+    @inject("CompanyService") private companyService: CompanyService,
   ) {}
   findAllCompanies = async (req: Request, res: Response) => {
     const response = await this.companyService.findAllCompanies();
@@ -17,6 +17,6 @@ export class CompanyController {
     const { company, owner } = req.body;
     const response = await this.companyService.createCompany(company, owner);
 
-    return res.status(201).json({ message: "new company created", response });
+    return res.status(201).json(response);
   };
 }

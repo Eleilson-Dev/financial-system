@@ -4,7 +4,6 @@ import { CompanyController } from "../controllers/Company.Controller.js";
 import { CompanyService } from "../services/Company.Service.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import { createCompanySchema } from "../schemas/schemas.js";
-import { z } from "zod";
 import { IsCompanyExists } from "../../../shared/middlewares/IsCompanyExists.middleware.js";
 
 export const companyRouter = Router();

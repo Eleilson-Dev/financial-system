@@ -9,12 +9,10 @@ export const userSchemas: Record<string, OpenAPIV3.SchemaObject> = {
         type: "string",
         example: "uuid",
       },
-
       name: {
         type: "string",
         example: "jhon doe",
       },
-
       email: {
         type: "string",
         example: "jhon@email.com",
@@ -59,7 +57,9 @@ export const userSchemas: Record<string, OpenAPIV3.SchemaObject> = {
       },
       role: {
         type: "string",
-        example: "ADMIN/OPERATOR",
+        enum: ["ADMIN", "OPERATOR"],
+        example: "ADMIN",
+        description: "Role do usuário (ADMIN ou OPERATOR)",
       },
     },
   },
@@ -83,7 +83,9 @@ export const userSchemas: Record<string, OpenAPIV3.SchemaObject> = {
       },
       role: {
         type: "string",
-        example: "ADMIN/OPERATOR",
+        enum: ["ADMIN", "OPERATOR"],
+        example: "ADMIN",
+        description: "Role do usuário (ADMIN ou OPERATOR)",
       },
       companyId: {
         type: "string",
