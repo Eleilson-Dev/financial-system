@@ -12,12 +12,12 @@ export const userSchemas: Record<string, OpenAPIV3.SchemaObject> = {
 
       name: {
         type: "string",
-        example: "Max",
+        example: "jhon doe",
       },
 
       email: {
         type: "string",
-        example: "max@email.com",
+        example: "jhon@email.com",
       },
     },
   },
@@ -32,10 +32,66 @@ export const userSchemas: Record<string, OpenAPIV3.SchemaObject> = {
         type: "string",
         example: "user@gmail.com",
       },
-
       password: {
         type: "string",
         example: "123456",
+      },
+    },
+  },
+
+  RegisterRequest: {
+    type: "object",
+
+    required: ["name", "email", "password", "role"],
+
+    properties: {
+      name: {
+        type: "string",
+        example: "Jhon doe",
+      },
+      email: {
+        type: "string",
+        example: "user@gmail.com",
+      },
+      password: {
+        type: "string",
+        example: "123456",
+      },
+      role: {
+        type: "string",
+        example: "ADMIN/OPERATOR",
+      },
+    },
+  },
+
+  RegisteredUser: {
+    type: "object",
+    properties: {
+      id: {
+        type: "string",
+        example: "uuid",
+      },
+
+      name: {
+        type: "string",
+        example: "Jhon doe",
+      },
+
+      email: {
+        type: "string",
+        example: "jhon@email.com",
+      },
+      role: {
+        type: "string",
+        example: "ADMIN/OPERATOR",
+      },
+      companyId: {
+        type: "string",
+        example: "uuid",
+      },
+      isActive: {
+        type: "boolean",
+        example: true,
       },
     },
   },
