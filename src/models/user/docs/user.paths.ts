@@ -4,12 +4,12 @@ export const userPaths: OpenAPIV3.PathsObject = {
   "/users/list": {
     get: {
       tags: ["Users"],
-      summary: "Lista todos os usuários",
+      summary: "List all users.",
       security: [{ bearerAuth: [] }],
 
       responses: {
         200: {
-          description: "List all users",
+          description: "List of all users.",
           content: {
             "application/json": {
               example: [
@@ -51,7 +51,7 @@ export const userPaths: OpenAPIV3.PathsObject = {
   "/user/login": {
     post: {
       tags: ["Users"],
-      summary: "User Login",
+      summary: "User Login.",
       security: [{ bearerAuth: [] }],
 
       requestBody: {
@@ -68,7 +68,7 @@ export const userPaths: OpenAPIV3.PathsObject = {
 
       responses: {
         200: {
-          description: "Success logged-in user",
+          description: "Success logged-in user.",
 
           content: {
             "application/json": {
@@ -107,7 +107,7 @@ export const userPaths: OpenAPIV3.PathsObject = {
   "/user/register": {
     post: {
       tags: ["Users"],
-      summary: "User Registration",
+      summary: "User Registration.",
       security: [{ bearerAuth: [] }],
 
       requestBody: {

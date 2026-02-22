@@ -4,6 +4,7 @@ import { swaggerBase } from "./base.js";
 import { userDocs } from "../../models/user/docs/user.docs.js";
 import { companyDocs } from "../../models/company/docs/company.docs.js";
 import { cashDocs } from "../../models/Cash/docs/cash.docs.js";
+import { cashAcountDocs } from "../../models/CashAccount/docs/cashAcount.docs.js";
 import { responses } from "./responses.js";
 
 export const swaggerDocument: OpenAPIV3.Document = {
@@ -11,15 +12,17 @@ export const swaggerDocument: OpenAPIV3.Document = {
 
   tags: [
     ...swaggerBase.tags!,
-    ...cashDocs.tags,
     ...companyDocs.tags,
+    ...cashDocs.tags,
+    ...cashAcountDocs.tags,
     ...userDocs.tags,
   ],
 
   paths: {
     ...swaggerBase.paths,
-    ...cashDocs.paths,
     ...companyDocs.paths,
+    ...cashDocs.paths,
+    ...cashAcountDocs.paths,
     ...userDocs.paths,
   },
 
@@ -28,9 +31,10 @@ export const swaggerDocument: OpenAPIV3.Document = {
 
     schemas: {
       ...swaggerBase.components?.schemas,
-      ...cashDocs.schemas,
-      ...userDocs.schemas,
       ...companyDocs.schemas,
+      ...cashDocs.schemas,
+      ...cashAcountDocs.schemas,
+      ...userDocs.schemas,
     },
 
     responses: {

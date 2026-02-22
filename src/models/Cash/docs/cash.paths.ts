@@ -4,7 +4,7 @@ export const cashPaths: OpenAPIV3.PathsObject = {
   "/open/cash": {
     post: {
       tags: ["Cash"],
-      summary: "Open cash",
+      summary: "Open cash.",
       security: [{ bearerAuth: [] }],
 
       requestBody: {
@@ -13,7 +13,7 @@ export const cashPaths: OpenAPIV3.PathsObject = {
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/openCashRequest",
+              $ref: "#/components/schemas/OpenCashRequest",
             },
           },
         },
@@ -21,12 +21,12 @@ export const cashPaths: OpenAPIV3.PathsObject = {
 
       responses: {
         200: {
-          description: "O caixa foi aberto",
+          description: "The cashier was opened.",
 
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/openCashResponse",
+                $ref: "#/components/schemas/OpenCashResponse",
               },
             },
           },
@@ -48,10 +48,34 @@ export const cashPaths: OpenAPIV3.PathsObject = {
   "/show/open/cash": {
     get: {
       tags: ["Cash"],
-      summary: "Shows the open cash register using the ID.",
+      summary:
+        "Displays the open cash register of the logged-in user using the ID.",
       security: [{ bearerAuth: [] }],
 
-      responses: {},
+      responses: {
+        200: {
+          description: "Open cash found.",
+
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#components/schemas/OpenCashResponse",
+              },
+            },
+          },
+        },
+        400: {
+          $ref: "#/components/responses/BadRequest",
+        },
+
+        401: {
+          $ref: "#/components/responses/Unauthorized",
+        },
+
+        500: {
+          $ref: "#/components/responses/InternalServerError",
+        },
+      },
     },
   },
   "/show/close/cash": {
@@ -60,7 +84,30 @@ export const cashPaths: OpenAPIV3.PathsObject = {
       summary: "Show closed cash",
       security: [{ bearerAuth: [] }],
 
-      responses: {},
+      responses: {
+        200: {
+          description: "Close cash found.",
+
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#components/schemas/CloseCashResponse",
+              },
+            },
+          },
+        },
+        400: {
+          $ref: "#/components/responses/BadRequest",
+        },
+
+        401: {
+          $ref: "#/components/responses/Unauthorized",
+        },
+
+        500: {
+          $ref: "#/components/responses/InternalServerError",
+        },
+      },
     },
   },
   "/close/cash": {
@@ -69,7 +116,42 @@ export const cashPaths: OpenAPIV3.PathsObject = {
       summary: "Close cash",
       security: [{ bearerAuth: [] }],
 
-      responses: {},
+      requestBody: {
+        required: true,
+
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/CloseCashRequest",
+            },
+          },
+        },
+      },
+
+      responses: {
+        200: {
+          description: "Close cash.",
+
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#components/schemas/CloseCashResponse",
+              },
+            },
+          },
+        },
+        400: {
+          $ref: "#/components/responses/BadRequest",
+        },
+
+        401: {
+          $ref: "#/components/responses/Unauthorized",
+        },
+
+        500: {
+          $ref: "#/components/responses/InternalServerError",
+        },
+      },
     },
   },
 };

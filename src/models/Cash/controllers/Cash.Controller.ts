@@ -36,6 +36,6 @@ export class CashController {
       req.body.countedCashAmount,
     );
 
-    return res.status(200).json({ message: "cash closed", response });
+    return res.status(200).json(response);
   };
 }

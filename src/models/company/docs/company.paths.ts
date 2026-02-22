@@ -4,7 +4,7 @@ export const companyPaths: OpenAPIV3.PathsObject = {
   "/companies/list": {
     get: {
       tags: ["Company"],
-      summary: "List all companies",
+      summary: "List all companies.",
 
       responses: {
         200: {
