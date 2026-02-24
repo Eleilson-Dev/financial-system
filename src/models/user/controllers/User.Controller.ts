@@ -15,7 +15,7 @@ export class UserController {
 
   loginUser = async (req: Request, res: Response) => {
     const response = await this.userService.loginUser(
-      res.locals.userLoginResult
+      res.locals.userLoginResult,
     );
 
     return res.status(200).json(response);
@@ -24,11 +24,9 @@ export class UserController {
   userRegister = async (req: Request, res: Response) => {
     const response = await this.userService.userRegister(
       req.body,
-      res.locals.encodedToken
+      res.locals.encodedToken,
     );
 
-    return res
-      .status(201)
-      .json([{ message: "User registration successful.", response }]);
+    return res.status(201).json(response);
   };
 }
