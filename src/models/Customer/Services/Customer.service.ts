@@ -357,4 +357,37 @@ export class CustomerService {
       throw new AppError(400, "Error deleting entry");
     }
   };
+
+  getPaymentsAmount = async (companyId: string) => {
+    try {
+      const { month, year } = await getOpenCompetency(companyId);
+      const result = await prisma.$transaction(async (tx) => {
+        const paymentsThisMoth = await tx.customerAccountTransaction.aggregate({
+          _sum: {
+            amount: true,
+          },
+          where: {
+            direction: "IN",
+            referenceMonth: month,
+            referenceYear: year,
+            customerAccount: {
+              companyId,
+            },
+          },
+        });
+
+        return paymentsThisMoth._sum.amount ?? 0;
+      });
+
+      return {
+        response: "paymentsThisMoth",
+        amount: result,
+        referenceMonth: month,
+        referenceYear: year,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new AppError(500, "Error registering sale");
+    }
+  };
 }

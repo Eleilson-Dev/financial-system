@@ -158,4 +158,30 @@ export class SaleService {
       throw new AppError(500, "Error deleting sale");
     }
   };
+
+  getSalesAmount = async (companyId: string) => {
+    try {
+      const { month, year } = await getOpenCompetency(companyId);
+      const result = await prisma.$transaction(async (tx) => {
+        const salesThisMonth = await tx.sale.aggregate({
+          _sum: {
+            amount: true,
+          },
+          where: { companyId, referenceMonth: month, referenceYear: year },
+        });
+
+        return salesThisMonth._sum.amount ?? 0;
+      });
+
+      return {
+        response: "salesThisMoth",
+        amount: result,
+        referenceMonth: month,
+        referenceYear: year,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new AppError(500, "Error registering sale");
+    }
+  };
 }

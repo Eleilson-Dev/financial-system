@@ -78,4 +78,12 @@ export class CustomerController {
 
     return res.status(200).json(response);
   };
+
+  getPaymentsAmount = async (req: Request, res: Response) => {
+    const { companyId } = res.locals.encodedToken;
+
+    const response = await this.customerService.getPaymentsAmount(companyId);
+
+    return res.status(200).json(response);
+  };
 }

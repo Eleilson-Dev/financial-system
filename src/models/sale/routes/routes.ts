@@ -32,3 +32,10 @@ saleRouter.delete(
   ValidatePrivilegedPassword.execute,
   (req, res) => saleController.deleteSale(req, res),
 );
+
+saleRouter.get(
+  "/sales-amount",
+  VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
+  (req, res) => saleController.getSalesAmount(req, res),
+);
