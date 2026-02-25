@@ -10,7 +10,8 @@ export class CashAccountController {
   ) {}
 
   showBalance = async (req: Request, res: Response) => {
-    const response = await this.cashAccountService.showBalance();
+    const { companyId } = res.locals.encodedToken;
+    const response = await this.cashAccountService.showBalance(companyId);
     const monthlyClosureStatus = res.locals.monthlyClosureStatus;
 
     return res.status(200).json([response, monthlyClosureStatus]);

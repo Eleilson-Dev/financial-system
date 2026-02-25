@@ -5,9 +5,9 @@ import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 
 @injectable()
 export class CashAccountService {
-  showBalance = async () => {
+  showBalance = async (companyId: string) => {
     const result = await prisma.$transaction(async (tx) => {
-      const balance = await tx.cashAccount.findMany();
+      const balance = await tx.cashAccount.findFirst({ where: { companyId } });
 
       return balance;
     });
