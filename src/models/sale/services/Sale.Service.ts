@@ -162,6 +162,10 @@ export class SaleService {
   getSalesAmount = async (companyId: string) => {
     try {
       const { month, year } = await getOpenCompetency(companyId);
+
+      const previousMonth = month === 1 ? 12 : month - 1;
+      const previousYear = month === 1 ? year - 1 : year;
+
       const result = await prisma.$transaction(async (tx) => {
         const salesThisMonth = await tx.sale.aggregate({
           _sum: {
@@ -170,14 +174,28 @@ export class SaleService {
           where: { companyId, referenceMonth: month, referenceYear: year },
         });
 
-        return salesThisMonth._sum.amount ?? 0;
+        const salesPreviousMonth = await tx.sale.aggregate({
+          _sum: {
+            amount: true,
+          },
+          where: {
+            companyId,
+            referenceMonth: previousMonth,
+            referenceYear: previousYear,
+          },
+        });
+
+        return {
+          currentAmount: Number(salesThisMonth._sum.amount) ?? 0,
+          previousAmount: Number(salesPreviousMonth._sum.amount) ?? 0,
+        };
       });
 
       return {
-        response: "salesThisMoth",
-        amount: result,
-        referenceMonth: month,
-        referenceYear: year,
+        amount: result.currentAmount,
+        reference: { month, year },
+        previousAmount: result.previousAmount,
+        previousReference: { month: previousMonth, year: previousYear },
       };
     } catch (error) {
       console.log(error);

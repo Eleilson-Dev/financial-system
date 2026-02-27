@@ -361,6 +361,10 @@ export class CustomerService {
   getPaymentsAmount = async (companyId: string) => {
     try {
       const { month, year } = await getOpenCompetency(companyId);
+
+      const previousMonth = month === 1 ? 12 : month - 1;
+      const previousYear = month === 1 ? year - 1 : year;
+
       const result = await prisma.$transaction(async (tx) => {
         const paymentsThisMoth = await tx.customerAccountTransaction.aggregate({
           _sum: {
@@ -376,14 +380,33 @@ export class CustomerService {
           },
         });
 
-        return paymentsThisMoth._sum.amount ?? 0;
+        const paymentsPreviousMonth =
+          await tx.customerAccountTransaction.aggregate({
+            _sum: {
+              amount: true,
+            },
+            where: {
+              direction: "IN",
+              referenceMonth: previousMonth,
+              referenceYear: previousYear,
+              customerAccount: {
+                companyId,
+              },
+            },
+          });
+
+        return {
+          currentPaymentsAmount: Number(paymentsThisMoth._sum.amount) ?? 0,
+          previousPaymentsAmount:
+            Number(paymentsPreviousMonth._sum.amount) ?? 0,
+        };
       });
 
       return {
-        response: "paymentsThisMoth",
-        amount: result,
-        referenceMonth: month,
-        referenceYear: year,
+        amount: result.currentPaymentsAmount,
+        reference: { month, year },
+        previousAmount: result.previousPaymentsAmount,
+        previousReference: { month: previousMonth, year: previousYear },
       };
     } catch (error) {
       console.log(error);

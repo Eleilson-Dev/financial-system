@@ -20,10 +20,7 @@ export class MonthlyClosureController {
       year,
     });
 
-    return res.status(201).json({
-      message: "Month successfully completed.",
-      response,
-    });
+    return res.status(201).json(response);
   };
 
   showMonthClosed = async (req: Request, res: Response) => {
