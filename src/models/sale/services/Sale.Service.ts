@@ -168,16 +168,16 @@ export class SaleService {
 
       const result = await prisma.$transaction(async (tx) => {
         const salesThisMonth = await tx.sale.aggregate({
-          _sum: {
-            amount: true,
+          _sum: { amount: true },
+          where: {
+            companyId,
+            referenceMonth: month,
+            referenceYear: year,
           },
-          where: { companyId, referenceMonth: month, referenceYear: year },
         });
 
         const salesPreviousMonth = await tx.sale.aggregate({
-          _sum: {
-            amount: true,
-          },
+          _sum: { amount: true },
           where: {
             companyId,
             referenceMonth: previousMonth,
@@ -186,8 +186,8 @@ export class SaleService {
         });
 
         return {
-          currentAmount: Number(salesThisMonth._sum.amount) ?? 0,
-          previousAmount: Number(salesPreviousMonth._sum.amount) ?? 0,
+          currentAmount: Number(salesThisMonth._sum.amount ?? 0),
+          previousAmount: Number(salesPreviousMonth._sum.amount ?? 0),
         };
       });
 
@@ -199,7 +199,7 @@ export class SaleService {
       };
     } catch (error) {
       console.log(error);
-      throw new AppError(500, "Error registering sale");
+      throw new AppError(500, "Error getting sales amount");
     }
   };
 }
