@@ -28,8 +28,8 @@ export class SaleController {
     return res.status(200).json(response);
   };
 
-  getSalesAmount = async (req: Request, res: Response) => {
-    const response = await this.saleService.getSalesAmount(
+  getTotalRevenueAmount = async (req: Request, res: Response) => {
+    const response = await this.saleService.getTotalRevenueAmount(
       res.locals.encodedToken.companyId,
     );
 

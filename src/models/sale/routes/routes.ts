@@ -37,5 +37,5 @@ saleRouter.get(
   "/sales-amount",
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
-  (req, res) => saleController.getSalesAmount(req, res),
+  (req, res) => saleController.getTotalRevenueAmount(req, res),
 );

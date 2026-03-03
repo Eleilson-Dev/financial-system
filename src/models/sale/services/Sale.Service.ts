@@ -5,7 +5,6 @@ import { AppError } from "../../../shared/errors/AppError.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
-import bcrypt from "bcrypt";
 
 @injectable()
 export class SaleService {
@@ -159,7 +158,7 @@ export class SaleService {
     }
   };
 
-  getSalesAmount = async (companyId: string) => {
+  getTotalRevenueAmount = async (companyId: string) => {
     try {
       const { month, year } = await getOpenCompetency(companyId);
 
@@ -167,7 +166,7 @@ export class SaleService {
       const previousYear = month === 1 ? year - 1 : year;
 
       const result = await prisma.$transaction(async (tx) => {
-        const salesThisMonth = await tx.sale.aggregate({
+        const salesCurrent = await tx.sale.aggregate({
           _sum: { amount: true },
           where: {
             companyId,
@@ -176,7 +175,7 @@ export class SaleService {
           },
         });
 
-        const salesPreviousMonth = await tx.sale.aggregate({
+        const salesPrevious = await tx.sale.aggregate({
           _sum: { amount: true },
           where: {
             companyId,
@@ -186,8 +185,8 @@ export class SaleService {
         });
 
         return {
-          currentAmount: Number(salesThisMonth._sum.amount ?? 0),
-          previousAmount: Number(salesPreviousMonth._sum.amount ?? 0),
+          currentAmount: Number(salesCurrent._sum.amount ?? 0),
+          previousAmount: Number(salesPrevious._sum.amount ?? 0),
         };
       });
 

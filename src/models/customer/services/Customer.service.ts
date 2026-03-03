@@ -366,7 +366,7 @@ export class CustomerService {
       const previousYear = month === 1 ? year - 1 : year;
 
       const result = await prisma.$transaction(async (tx) => {
-        const paymentsThisMoth = await tx.customerAccountTransaction.aggregate({
+        const paymentsCurrent = await tx.customerAccountTransaction.aggregate({
           _sum: {
             amount: true,
           },
@@ -380,25 +380,23 @@ export class CustomerService {
           },
         });
 
-        const paymentsPreviousMonth =
-          await tx.customerAccountTransaction.aggregate({
-            _sum: {
-              amount: true,
+        const paymentsPrevious = await tx.customerAccountTransaction.aggregate({
+          _sum: {
+            amount: true,
+          },
+          where: {
+            direction: "IN",
+            referenceMonth: previousMonth,
+            referenceYear: previousYear,
+            customerAccount: {
+              companyId,
             },
-            where: {
-              direction: "IN",
-              referenceMonth: previousMonth,
-              referenceYear: previousYear,
-              customerAccount: {
-                companyId,
-              },
-            },
-          });
+          },
+        });
 
         return {
-          currentPaymentsAmount: Number(paymentsThisMoth._sum.amount) ?? 0,
-          previousPaymentsAmount:
-            Number(paymentsPreviousMonth._sum.amount) ?? 0,
+          currentPaymentsAmount: Number(paymentsCurrent._sum.amount) ?? 0,
+          previousPaymentsAmount: Number(paymentsPrevious._sum.amount) ?? 0,
         };
       });
 

@@ -3,8 +3,8 @@ import { OpenAPIV3 } from "openapi-types";
 import { swaggerBase } from "./base.js";
 import { userDocs } from "../../models/user/docs/user.docs.js";
 import { companyDocs } from "../../models/company/docs/company.docs.js";
-import { cashDocs } from "../../models/Cash/docs/cash.docs.js";
-import { cashAcountDocs } from "../../models/CashAccount/docs/cashAcount.docs.js";
+import { cashDocs } from "../../models/cash/docs/cash.docs.js";
+import { cashAcountDocs } from "../../models/cashAccount/docs/cashAcount.docs.js";
 import { responses } from "./responses.js";
 
 export const swaggerDocument: OpenAPIV3.Document = {

@@ -22,7 +22,7 @@ export async function getMonthlyClosureStatus(companyId: string) {
     message =
       diffDays === 0
         ? "Hoje é o último dia para fechar o mês."
-        : `Faltam ${diffDays} dia(s) para fechar o mês.`;
+        : `Faltam ${diffDays} dias para fechar o mês.`;
   } else {
     status = "OPEN";
     message = `Faltam ${diffDays} dias para fechar o mês.`;

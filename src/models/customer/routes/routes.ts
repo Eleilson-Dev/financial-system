@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { container } from "tsyringe";
-import { CustomerService } from "../Services/Customer.service.js";
-import { CustomerController } from "../Controllers/Customer.controller.js";
+import { CustomerService } from "../services/Customer.service.js";
+import { CustomerController } from "../controllers/Customer.controller.js";
 import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.js";
 import { VerifyAdmin } from "../../../shared/middlewares/VerifyAdm.middleware.js";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
@@ -11,7 +11,7 @@ import {
   saleCreditSchema,
   salePaymentSchema,
   showCustomerSchema,
-} from "../Schema/schema.js";
+} from "../schema/schema.js";
 import { AlreadyPayDebit } from "../../../shared/middlewares/AlreadyPayDebit.middleware.js";
 import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.middleware.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";

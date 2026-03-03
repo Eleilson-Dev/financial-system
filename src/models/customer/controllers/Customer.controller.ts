@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { inject, injectable } from "tsyringe";
-import type { CustomerService } from "../Services/Customer.service.js";
+import type { CustomerService } from "../services/Customer.service.js";
 
 @injectable()
 export class CustomerController {

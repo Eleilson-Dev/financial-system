@@ -100,7 +100,7 @@ CREATE TABLE "CashRegister" (
     "id" TEXT NOT NULL,
     "openedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "closedAt" TIMESTAMP(3),
-    "openingAmount" DECIMAL(12,2) NOT NULL,
+    "openingAmount" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "totalCash" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "totalPix" DECIMAL(12,2) NOT NULL DEFAULT 0,
     "totalDebit" DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -111,6 +111,9 @@ CREATE TABLE "CashRegister" (
     "companyId" TEXT NOT NULL,
     "openedById" TEXT NOT NULL,
     "closedById" TEXT,
+    "countedCashAmount" DECIMAL(12,2) DEFAULT 0,
+    "expectedCashAmount" DECIMAL(12,2) DEFAULT 0,
+    "cashDifference" DECIMAL(12,2) DEFAULT 0,
 
     CONSTRAINT "CashRegister_pkey" PRIMARY KEY ("id")
 );
@@ -212,12 +215,13 @@ CREATE TABLE "MonthlyClosure" (
 CREATE TABLE "Customer" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "nameNormalized" TEXT NOT NULL,
+    "nameNormalized" VARCHAR(255) NOT NULL,
     "cpf" TEXT NOT NULL,
     "phone" TEXT,
     "companyId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "address" JSONB,
 
     CONSTRAINT "Customer_pkey" PRIMARY KEY ("id")
 );
@@ -280,6 +284,9 @@ CREATE UNIQUE INDEX "MonthlyClosure_month_year_companyId_key" ON "MonthlyClosure
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Customer_cpf_key" ON "Customer"("cpf");
+
+-- CreateIndex
+CREATE INDEX "Customer_companyId_nameNormalized_idx" ON "Customer"("companyId", "nameNormalized");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "CustomerAccount_customerId_key" ON "CustomerAccount"("customerId");
