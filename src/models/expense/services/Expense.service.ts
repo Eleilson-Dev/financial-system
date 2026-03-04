@@ -3,6 +3,7 @@ import { AppError } from "../../../shared/errors/AppError.js";
 import { prisma } from "../../../config/db/database.js";
 import type { TCreateExpenseSchema } from "../schema/schema.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
+import { io } from "../../../server.js";
 
 @injectable()
 export class ExpenseService {
@@ -57,6 +58,8 @@ export class ExpenseService {
             referenceYear: year,
           },
         });
+
+        io.to(companyId).emit("financial:updated");
 
         return [expense, cashAccountTransaction];
       });

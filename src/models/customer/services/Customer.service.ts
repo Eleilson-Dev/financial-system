@@ -5,6 +5,7 @@ import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
 import { normalizeText } from "../../../shared/utils/normalizeText.js";
+import { io } from "../../../server.js";
 
 @injectable()
 export class CustomerService {
@@ -246,6 +247,8 @@ export class CustomerService {
         ];
       });
 
+      io.to(companyId).emit("financial:updated");
+
       return result;
     } catch (error) {
       throw new AppError(
@@ -352,63 +355,11 @@ export class CustomerService {
         return { message: "Customer payment reverted successfully" };
       });
 
+      io.to(companyId).emit("financial:updated");
+
       return result;
     } catch (error) {
       throw new AppError(400, "Error deleting entry");
-    }
-  };
-
-  getPaymentsAmount = async (companyId: string) => {
-    try {
-      const { month, year } = await getOpenCompetency(companyId);
-
-      const previousMonth = month === 1 ? 12 : month - 1;
-      const previousYear = month === 1 ? year - 1 : year;
-
-      const result = await prisma.$transaction(async (tx) => {
-        const paymentsCurrent = await tx.customerAccountTransaction.aggregate({
-          _sum: {
-            amount: true,
-          },
-          where: {
-            direction: "IN",
-            referenceMonth: month,
-            referenceYear: year,
-            customerAccount: {
-              companyId,
-            },
-          },
-        });
-
-        const paymentsPrevious = await tx.customerAccountTransaction.aggregate({
-          _sum: {
-            amount: true,
-          },
-          where: {
-            direction: "IN",
-            referenceMonth: previousMonth,
-            referenceYear: previousYear,
-            customerAccount: {
-              companyId,
-            },
-          },
-        });
-
-        return {
-          currentPaymentsAmount: Number(paymentsCurrent._sum.amount) ?? 0,
-          previousPaymentsAmount: Number(paymentsPrevious._sum.amount) ?? 0,
-        };
-      });
-
-      return {
-        amount: result.currentPaymentsAmount,
-        reference: { month, year },
-        previousAmount: result.previousPaymentsAmount,
-        previousReference: { month: previousMonth, year: previousYear },
-      };
-    } catch (error) {
-      console.log(error);
-      throw new AppError(500, "Error registering sale");
     }
   };
 }

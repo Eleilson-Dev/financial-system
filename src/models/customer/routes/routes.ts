@@ -76,10 +76,3 @@ customerRouter.delete(
   ValidatePrivilegedPassword.execute,
   (req, res) => customerController.deleteEntry(req, res),
 );
-
-customerRouter.get(
-  "/customers/payments-amount",
-  VerifyToken.execute,
-  AttachMonthlyClosureStatus.execute,
-  (req, res) => customerController.getPaymentsAmount(req, res),
-);

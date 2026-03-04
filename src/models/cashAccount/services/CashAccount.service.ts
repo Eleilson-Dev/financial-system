@@ -2,6 +2,7 @@ import { injectable } from "tsyringe";
 import { prisma } from "../../../config/db/database.js";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
+import { io } from "../../../server.js";
 
 @injectable()
 export class CashAccountService {
@@ -55,6 +56,8 @@ export class CashAccountService {
 
         return balance;
       });
+
+      io.to(companyId).emit("financial:updated");
 
       return result;
     } catch (error) {

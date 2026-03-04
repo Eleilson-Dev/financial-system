@@ -2,6 +2,7 @@ import { injectable } from "tsyringe";
 import { prisma } from "../../../config/db/database.js";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
+import { io } from "../../../server.js";
 interface PaySalaryDTO {
   employeeId: string;
   companyId: string;
@@ -57,6 +58,8 @@ export class SalaryPaymentService {
 
         return [payment, cashAccountTransaction];
       });
+
+      io.to(companyId).emit("financial:updated");
 
       return result;
     } catch (error) {

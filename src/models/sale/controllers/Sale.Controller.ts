@@ -5,6 +5,16 @@ import type { SaleService } from "../services/Sale.Service.js";
 @injectable()
 export class SaleController {
   constructor(@inject("SaleService") private saleService: SaleService) {}
+  getAllSales = async (req: Request, res: Response) => {
+    const response = await this.saleService.getAllSales(
+      res.locals.encodedToken.companyId,
+    );
+
+    console.log(response.length);
+
+    res.status(200).json(response);
+  };
+
   registerSale = async (req: Request, res: Response) => {
     const response = await this.saleService.registerSale(req.body, {
       companyId: res.locals.encodedToken.companyId,
@@ -23,14 +33,6 @@ export class SaleController {
       id as string,
       companyId,
       userId,
-    );
-
-    return res.status(200).json(response);
-  };
-
-  getTotalRevenueAmount = async (req: Request, res: Response) => {
-    const response = await this.saleService.getTotalRevenueAmount(
-      res.locals.encodedToken.companyId,
     );
 
     return res.status(200).json(response);

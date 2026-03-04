@@ -19,6 +19,7 @@ import { cashAccountRouter } from "./models/cashAccount/routes/routes.js";
 import { expenseRouter } from "./models/expense/routes/routes.js";
 import { monthlyClosureRouter } from "./models/monthlyClosure/routes/routes.js";
 import { customerRouter } from "./models/customer/routes/routes.js";
+import { financialOverviewRouter } from "./models/financialOverview/routes/routes.js";
 
 export const app = express();
 
@@ -39,5 +40,6 @@ app.use("/financial/system", cashAccountRouter);
 app.use("/financial/system", expenseRouter);
 app.use("/financial/system", monthlyClosureRouter);
 app.use("/financial/system", customerRouter);
+app.use("/financial/system", financialOverviewRouter);
 
 app.use(HandleErrors.execute);

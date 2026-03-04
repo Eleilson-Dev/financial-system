@@ -14,6 +14,13 @@ const saleController = container.resolve(SaleController);
 
 export const saleRouter = Router();
 
+saleRouter.get(
+  "/all/sales",
+  VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
+  (req, res) => saleController.getAllSales(req, res),
+);
+
 saleRouter.post(
   "/register/sale",
   VerifyToken.execute,
@@ -31,11 +38,4 @@ saleRouter.delete(
   RequireOpenCash.execute,
   ValidatePrivilegedPassword.execute,
   (req, res) => saleController.deleteSale(req, res),
-);
-
-saleRouter.get(
-  "/sales-amount",
-  VerifyToken.execute,
-  AttachMonthlyClosureStatus.execute,
-  (req, res) => saleController.getTotalRevenueAmount(req, res),
 );

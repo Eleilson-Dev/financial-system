@@ -5,9 +5,29 @@ import { AppError } from "../../../shared/errors/AppError.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
+import { io } from "../../../server.js";
 
 @injectable()
 export class SaleService {
+  getAllSales = async (companyId: string) => {
+    try {
+      const { month, year } = await getOpenCompetency(companyId);
+
+      const result = await prisma.$transaction(async (tx) => {
+        const allSales = await tx.sale.findMany({
+          where: { companyId, referenceMonth: month, referenceYear: year },
+        });
+
+        return allSales;
+      });
+
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw new AppError(500, "Error retrieving all sales.");
+    }
+  };
+
   registerSale = async (saleData: TCreateSaleSchema, resLocals: any) => {
     try {
       const { companyId, userId, cashRegisterId } = resLocals;
@@ -82,6 +102,8 @@ export class SaleService {
         return sale;
       });
 
+      io.to(companyId).emit("financial:updated");
+
       return result;
     } catch (error) {
       console.log(error);
@@ -155,50 +177,6 @@ export class SaleService {
     } catch (error) {
       console.log(error);
       throw new AppError(500, "Error deleting sale");
-    }
-  };
-
-  getTotalRevenueAmount = async (companyId: string) => {
-    try {
-      const { month, year } = await getOpenCompetency(companyId);
-
-      const previousMonth = month === 1 ? 12 : month - 1;
-      const previousYear = month === 1 ? year - 1 : year;
-
-      const result = await prisma.$transaction(async (tx) => {
-        const salesCurrent = await tx.sale.aggregate({
-          _sum: { amount: true },
-          where: {
-            companyId,
-            referenceMonth: month,
-            referenceYear: year,
-          },
-        });
-
-        const salesPrevious = await tx.sale.aggregate({
-          _sum: { amount: true },
-          where: {
-            companyId,
-            referenceMonth: previousMonth,
-            referenceYear: previousYear,
-          },
-        });
-
-        return {
-          currentAmount: Number(salesCurrent._sum.amount ?? 0),
-          previousAmount: Number(salesPrevious._sum.amount ?? 0),
-        };
-      });
-
-      return {
-        amount: result.currentAmount,
-        reference: { month, year },
-        previousAmount: result.previousAmount,
-        previousReference: { month: previousMonth, year: previousYear },
-      };
-    } catch (error) {
-      console.log(error);
-      throw new AppError(500, "Error getting sales amount");
     }
   };
 }

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { UserController } from "../controllers/User.Controller.js";
+import { UserController } from "../controllers/User.controller.js";
 import { UserService } from "../services/User.Service.js";
 import { container } from "tsyringe";
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";

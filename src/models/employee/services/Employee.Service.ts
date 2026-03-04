@@ -2,6 +2,7 @@ import { injectable } from "tsyringe";
 import { prisma } from "../../../config/db/database.js";
 import type { TCreateEmployeeSchema } from "../schema/schema.js";
 import { AppError } from "../../../shared/errors/AppError.js";
+import { io } from "../../../server.js";
 
 @injectable()
 export class EmployeeService {
@@ -18,6 +19,8 @@ export class EmployeeService {
           salary: employeeData.salary,
         },
       });
+
+      io.to(companyId).emit("financial:updated");
 
       return newEmployee;
     } catch (error) {
