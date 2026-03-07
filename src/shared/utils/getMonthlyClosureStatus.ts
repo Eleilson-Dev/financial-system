@@ -4,19 +4,20 @@ import { getOpenCompetency } from "./getOpenCompetency.js";
 export async function getMonthlyClosureStatus(companyId: string) {
   const { month, year } = await getOpenCompetency(companyId);
 
-  // data limite para fechamento (dia 5)
   const closeDeadline = dayjs().year(year).month(month).date(5).endOf("day");
 
   const today = dayjs();
 
-  const diffDays = closeDeadline.diff(today, "day");
+  const diffDays = Math.floor(closeDeadline.diff(today, "day", true));
+  const days = Math.abs(diffDays);
+  const dayLabel = days === 1 ? "dia" : "dias";
 
   let status: "OPEN" | "DUE_SOON" | "OVERDUE";
   let message: string;
 
   if (diffDays < 0) {
     status = "OVERDUE";
-    message = `Fechamento em atraso há ${Math.abs(diffDays)} dia(s).`;
+    message = `Fechamento em atraso há ${Math.abs(diffDays)} ${dayLabel}.`;
   } else if (diffDays <= 3) {
     status = "DUE_SOON";
     message =

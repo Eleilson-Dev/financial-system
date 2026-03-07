@@ -59,18 +59,7 @@ export class SaleService {
           },
         });
 
-        const cashAccount = await tx.cashAccount.findUnique({
-          where: { companyId },
-        });
-
-        if (!cashAccount) {
-          throw new AppError(
-            500,
-            "Structural error: company without a financial account.",
-          );
-        }
-
-        await tx.cashAccount.update({
+        const cashAccount = await tx.cashAccount.update({
           where: { companyId },
           data: {
             balance: { increment: saleData.amount },
