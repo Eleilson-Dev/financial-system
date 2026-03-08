@@ -125,6 +125,8 @@ export class CustomerService {
         return { updatedAccount, customerDebt, transaction };
       });
 
+      io.to(companyId).emit("financial:updated");
+
       return result;
     } catch (error) {
       console.log(error);
