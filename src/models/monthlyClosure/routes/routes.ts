@@ -26,9 +26,9 @@ monthlyClosureRouter.post(
 );
 
 monthlyClosureRouter.get(
-  "/show/month/closed",
+  "/show/months/closed",
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
   VerifyAdmin.execute,
-  (req, res) => monthlyClosureController.showMonthClosed(req, res),
+  (req, res) => monthlyClosureController.showMonthsClosed(req, res),
 );

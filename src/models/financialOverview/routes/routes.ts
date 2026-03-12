@@ -23,3 +23,10 @@ financialOverviewRouter.get(
   AttachMonthlyClosureStatus.execute,
   (req, res) => financialOverviewController.getFinancialSummary(req, res),
 );
+
+financialOverviewRouter.get(
+  "/monthly-graph",
+  VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
+  (req, res) => financialOverviewController.getMonthlyGraph(req, res),
+);

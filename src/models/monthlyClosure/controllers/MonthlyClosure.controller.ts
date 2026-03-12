@@ -23,10 +23,10 @@ export class MonthlyClosureController {
     return res.status(201).json(response);
   };
 
-  showMonthClosed = async (req: Request, res: Response) => {
+  showMonthsClosed = async (req: Request, res: Response) => {
     const { companyId } = res.locals.encodedToken;
     const response =
-      await this.monthlyClosureService.showMonthClosed(companyId);
+      await this.monthlyClosureService.showMonthsClosed(companyId);
 
     return res.status(200).json(response);
   };

@@ -18,4 +18,13 @@ export class FinancialOverviewController {
 
     return res.status(201).json([response, monthlyClosureStatus]);
   };
+
+  getMonthlyGraph = async (req: Request, res: Response) => {
+    const companyId = res.locals.encodedToken.companyId;
+
+    const response =
+      await this.financialOverviewService.getMonthlyGraph(companyId);
+
+    return res.status(200).json(response);
+  };
 }

@@ -89,7 +89,7 @@ export class MonthlyClosureService {
     return result;
   };
 
-  showMonthClosed = async (companyId: string) => {
+  showMonthsClosed = async (companyId: string) => {
     const result = await prisma.$transaction(async (tx) => {
       const allClosingMonths = await tx.monthlyClosure.findMany({
         where: { companyId },
