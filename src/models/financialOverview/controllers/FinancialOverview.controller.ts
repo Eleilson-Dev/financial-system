@@ -27,4 +27,13 @@ export class FinancialOverviewController {
 
     return res.status(200).json(response);
   };
+
+  getWeeklyGraph = async (req: Request, res: Response) => {
+    const companyId = res.locals.encodedToken.companyId;
+
+    const response =
+      await this.financialOverviewService.getWeeklyGraph(companyId);
+
+    return res.status(200).json(response);
+  };
 }

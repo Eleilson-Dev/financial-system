@@ -30,3 +30,10 @@ financialOverviewRouter.get(
   AttachMonthlyClosureStatus.execute,
   (req, res) => financialOverviewController.getMonthlyGraph(req, res),
 );
+
+financialOverviewRouter.get(
+  "/weekly-graph",
+  VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
+  (req, res) => financialOverviewController.getWeeklyGraph(req, res),
+);

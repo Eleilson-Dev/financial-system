@@ -197,4 +197,96 @@ export class FinancialOverviewService {
 
     return result;
   };
+
+  getWeeklyGraph = async (companyId: string) => {
+    const now = new Date();
+
+    // pegar segunda da semana
+    const startOfWeek = new Date(now);
+    const day = startOfWeek.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+
+    startOfWeek.setDate(startOfWeek.getDate() + diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    // pegar domingo
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    const days = Array.from({ length: 7 }, (_, i) => ({
+      day: i + 1,
+      entry: 0,
+      exit: 0,
+    }));
+
+    const result = await prisma.$transaction(async (tx) => {
+      const transactions = await tx.cashAccountTransaction.findMany({
+        where: {
+          cashAccount: { companyId },
+          createdAt: {
+            gte: startOfWeek,
+            lte: endOfWeek,
+          },
+        },
+      });
+
+      for (const t of transactions) {
+        const date = new Date(t.createdAt);
+
+        let dayIndex = date.getDay();
+        dayIndex = dayIndex === 0 ? 7 : dayIndex; // domingo vira 7
+
+        const index = dayIndex - 1;
+        const dayItem = days[index];
+
+        if (!dayItem) continue;
+
+        if (t.direction === "IN") {
+          dayItem.entry += Number(t.amount);
+        }
+
+        if (t.direction === "OUT") {
+          dayItem.exit += Number(t.amount);
+        }
+      }
+
+      const currentMaxEntry = Math.max(...days.map((d) => d.entry));
+      const currentMaxExit = Math.max(...days.map((d) => d.exit));
+
+      const maxEntryDb = await tx.cashAccountTransaction.aggregate({
+        _max: { amount: true },
+        where: {
+          direction: "IN",
+          cashAccount: { companyId },
+        },
+      });
+
+      const maxExitDb = await tx.cashAccountTransaction.aggregate({
+        _max: { amount: true },
+        where: {
+          direction: "OUT",
+          cashAccount: { companyId },
+        },
+      });
+
+      const maxEntry = Math.max(
+        Number(maxEntryDb._max.amount ?? 0),
+        currentMaxEntry,
+      );
+
+      const maxExit = Math.max(
+        Number(maxExitDb._max.amount ?? 0),
+        currentMaxExit,
+      );
+
+      return {
+        days,
+        maxEntry,
+        maxExit,
+      };
+    });
+
+    return result;
+  };
 }
