@@ -146,6 +146,9 @@ model CashAccountTransaction {
 
   performedById String?
   performedBy   User?   @relation(fields: [performedById], references: [id])
+
+  @@index([cashAccountId, createdAt])
+  @@index([referenceMonth, referenceYear])
 }
 
 model Expense {
@@ -219,6 +222,9 @@ model CashRegisterEntry {
 
   referenceType CashRegisterEntryReferenceType?
   referenceId   String?
+
+  @@index([cashRegisterId, createdAt])
+  @@index([referenceMonth, referenceYear])
 }
 
 model Sale {
@@ -236,6 +242,9 @@ model Sale {
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
+
+  @@index([companyId, createdAt])
+  @@index([referenceMonth, referenceYear, companyId])
 }
 
 model Employee {

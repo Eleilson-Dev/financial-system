@@ -201,7 +201,6 @@ export class FinancialOverviewService {
   getWeeklyGraph = async (companyId: string) => {
     const now = new Date();
 
-    // pegar segunda da semana
     const startOfWeek = new Date(now);
     const day = startOfWeek.getDay();
     const diff = day === 0 ? -6 : 1 - day;
@@ -209,7 +208,6 @@ export class FinancialOverviewService {
     startOfWeek.setDate(startOfWeek.getDate() + diff);
     startOfWeek.setHours(0, 0, 0, 0);
 
-    // pegar domingo
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
@@ -235,7 +233,7 @@ export class FinancialOverviewService {
         const date = new Date(t.createdAt);
 
         let dayIndex = date.getDay();
-        dayIndex = dayIndex === 0 ? 7 : dayIndex; // domingo vira 7
+        dayIndex = dayIndex === 0 ? 7 : dayIndex;
 
         const index = dayIndex - 1;
         const dayItem = days[index];
@@ -285,6 +283,22 @@ export class FinancialOverviewService {
         maxEntry,
         maxExit,
       };
+    });
+
+    return result;
+  };
+
+  getRecentTransactions = async (companyId: string) => {
+    const result = prisma.$transaction(async (tx) => {
+      const transactions = await tx.cashAccountTransaction.findMany({
+        where: { cashAccount: { companyId } },
+        take: 25,
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      return transactions;
     });
 
     return result;
