@@ -22,6 +22,10 @@ export class SalaryPaymentService {
       const { month, year } = await getOpenCompetency(companyId);
 
       const result = await prisma.$transaction(async (tx) => {
+        const employee = await tx.employee.findFirst({
+          where: { companyId, id: employeeId, isActive: true },
+        });
+
         const payment = await tx.salaryPayment.create({
           data: {
             employeeId,
@@ -47,7 +51,7 @@ export class SalaryPaymentService {
             cashAccountId: cashAccount.id,
             amount: salary,
             type: "SALARY_PAYMENT",
-            description: "Pagamento de Salário",
+            description: `Pagamento de Salário - ${employee?.name}`,
             performedById: userId,
             direction: "OUT",
             referenceId: payment.id,
