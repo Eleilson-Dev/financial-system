@@ -10,17 +10,13 @@ import { io } from "../../../server.js";
 @injectable()
 export class CustomerService {
   showAllCustomer = async (companyId: string) => {
-    const result = prisma.$transaction(async (tx) => {
-      const allCustomers = await tx.customer.findMany({
-        where: { companyId },
-        include: { account: true },
-        take: 15,
-      });
-
-      return allCustomers;
+    const allCustomers = await prisma.customer.findMany({
+      where: { companyId },
+      include: { account: true },
+      take: 15,
     });
 
-    return result;
+    return allCustomers;
   };
 
   showCustomer = async (companyId: string, search: string) => {
@@ -44,7 +40,7 @@ export class CustomerService {
 
   registerCustomer = async (customerData: any, companyId: string) => {
     try {
-      const result = prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx) => {
         const normalize = normalizeText(customerData.name);
 
         const customer = await tx.customer.create({
@@ -79,25 +75,17 @@ export class CustomerService {
     companyId: string,
   ) => {
     try {
+      const { month, year } = await getOpenCompetency(companyId);
+
       const result = await prisma.$transaction(async (tx) => {
-        const account = await tx.customerAccount.findUnique({
+        const account = await tx.customerAccount.update({
           where: { customerId },
-        });
-
-        if (!account) {
-          throw new AppError(404, "Customer account not found.");
-        }
-
-        const updatedAccount = await tx.customerAccount.update({
-          where: { id: account.id },
           data: {
             balance: {
               increment: amount,
             },
           },
         });
-
-        const { month, year } = await getOpenCompetency(companyId);
 
         const customerDebt = await tx.customerDebt.create({
           data: {
@@ -122,7 +110,7 @@ export class CustomerService {
           },
         });
 
-        return { updatedAccount, customerDebt, transaction };
+        return { account, customerDebt, transaction };
       });
 
       io.to(companyId).emit("financial:updated");
@@ -143,116 +131,120 @@ export class CustomerService {
     paymentMethod: any,
   ) => {
     try {
-      const result = await prisma.$transaction(async (tx) => {
-        const custumer = await tx.customer.findUnique({
-          where: { id: customerId },
-        });
+      const { month, year } = await getOpenCompetency(companyId);
 
-        const customerAccount = await tx.customerAccount.findUnique({
-          where: { customerId },
-        });
+      const customer = await prisma.customer.findUnique({
+        where: { id: customerId },
+        select: { name: true },
+      });
 
-        if (!customerAccount) {
-          throw new AppError(404, "Customer account not found.");
-        }
+      const result = await prisma.$transaction(
+        async (tx) => {
+          const customerAccountUpdated = await tx.customerAccount.update({
+            where: { customerId },
+            data: { balance: { decrement: amountPaid } },
+          });
 
-        const customerAccountUpdated = await tx.customerAccount.update({
-          where: { id: customerAccount.id },
-          data: { balance: { decrement: amountPaid } },
-        });
-
-        const { month, year } = await getOpenCompetency(companyId);
-
-        const customerDebt = await tx.customerDebt.create({
-          data: {
-            customerId,
-            referenceMonth: month,
-            referenceYear: year,
-            amount: amountPaid,
-            description: `Pagamento recebido`,
-          },
-        });
-
-        await tx.cashRegisterEntry.create({
-          data: {
-            amount: amountPaid,
-            direction: "IN",
-            paymentMethod: paymentMethod,
-            description: `Pagamento recebido - ${custumer?.name}`,
-            cashRegisterId,
-            referenceMonth: month,
-            referenceYear: year,
-            referenceType: "CUSTOMER_ACCOUNT",
-            referenceId: customerDebt.id,
-          },
-        });
-
-        const customerAccountTransaction =
-          await tx.customerAccountTransaction.create({
+          const customerDebt = await tx.customerDebt.create({
             data: {
-              customerAccountId: customerAccount.id,
-              amount: amountPaid,
-              direction: "IN",
-              description: `Pagamento recebido - ${custumer?.name}`,
-              referenceId: customerDebt.id,
-              referenceType: "PAYMENT",
+              customerId,
               referenceMonth: month,
               referenceYear: year,
+              amount: amountPaid,
+              description: `Pagamento recebido`,
             },
           });
 
-        const cashAccount = await tx.cashAccount.findUnique({
-          where: { companyId },
-        });
+          const cashAccount = await tx.cashAccount.findUnique({
+            where: { companyId },
+            select: { id: true },
+          });
 
-        if (!cashAccount) {
-          throw new AppError(
-            500,
-            "Structural error: company without a financial account.",
+          if (!cashAccount) {
+            throw new AppError(
+              500,
+              "Structural error: company without a financial account.",
+            );
+          }
+
+          const [
+            cashRegisterEntry,
+            customerAccountTransaction,
+            updatedCashAccount,
+            updatedCashRegister,
+          ] = await Promise.all([
+            tx.cashRegisterEntry.create({
+              data: {
+                amount: amountPaid,
+                direction: "IN",
+                paymentMethod,
+                description: `Pagamento recebido - ${customer?.name}`,
+                cashRegisterId,
+                referenceMonth: month,
+                referenceYear: year,
+                referenceType: "CUSTOMER_ACCOUNT",
+                referenceId: customerDebt.id,
+              },
+            }),
+            tx.customerAccountTransaction.create({
+              data: {
+                customerAccountId: customerAccountUpdated.id,
+                amount: amountPaid,
+                direction: "IN",
+                description: `Pagamento recebido - ${customer?.name}`,
+                referenceId: customerDebt.id,
+                referenceType: "PAYMENT",
+                referenceMonth: month,
+                referenceYear: year,
+              },
+            }),
+            tx.cashAccount.update({
+              where: { companyId },
+              data: {
+                balance: { increment: amountPaid },
+              },
+            }),
+            tx.cashRegister.update({
+              where: { id: cashRegisterId },
+              data: buildCashRegisterUpdate(
+                paymentMethod,
+                new Prisma.Decimal(amountPaid),
+              ),
+            }),
+          ]);
+
+          const cashAccountTransaction = await tx.cashAccountTransaction.create(
+            {
+              data: {
+                cashAccountId: cashAccount.id,
+                amount: amountPaid,
+                direction: "IN",
+                type: "INCOME",
+                description: `Pagamento recebido - ${customer?.name}`,
+                referenceMonth: month,
+                referenceYear: year,
+                performedById: userId,
+                referenceId: customerDebt.id,
+              },
+            },
           );
-        }
 
-        await tx.cashAccount.update({
-          where: { companyId },
-          data: {
-            balance: { increment: amountPaid },
-          },
-        });
-
-        const cashAccountTransaction = await tx.cashAccountTransaction.create({
-          data: {
-            cashAccountId: cashAccount.id,
-            amount: amountPaid,
-            direction: "IN",
-            type: "INCOME",
-            description: `Pagamento recebido - ${custumer?.name}`,
-            referenceMonth: month,
-            referenceYear: year,
-            performedById: userId,
-            referenceId: customerDebt.id,
-          },
-        });
-
-        await tx.cashRegister.update({
-          where: { id: cashRegisterId },
-          data: buildCashRegisterUpdate(
-            paymentMethod,
-            new Prisma.Decimal(amountPaid),
-          ),
-        });
-
-        return [
-          { customerAccountUpdated },
-          { customerDebt },
-          { customerAccountTransaction },
-          { cashAccountTransaction },
-        ];
-      });
+          return [
+            { customerAccountUpdated },
+            { customerDebt },
+            { customerAccountTransaction },
+            { cashAccountTransaction },
+          ];
+        },
+        { timeout: 15000 },
+      );
 
       io.to(companyId).emit("financial:updated");
 
       return result;
     } catch (error) {
+      console.error("PAY DEBT ERROR:", error);
+
       throw new AppError(
         400,
         "Error while trying to make a payment for an outstanding amount.",
