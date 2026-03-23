@@ -2,6 +2,8 @@ import { injectable } from "tsyringe";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 import { prisma } from "../../../config/db/database.js";
 import { AppError } from "../../../shared/errors/AppError.js";
+import { startOfWeek, endOfWeek } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 
 @injectable()
 export class FinancialOverviewService {
@@ -199,20 +201,20 @@ export class FinancialOverviewService {
   };
 
   getWeeklyGraph = async (companyId: string) => {
-    const now = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }),
-    );
+    const now = new Date();
 
-    const startOfWeek = new Date(now);
-    const day = startOfWeek.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
+    const TIMEZONE = "America/Sao_Paulo";
 
-    startOfWeek.setDate(startOfWeek.getDate() + diff);
-    startOfWeek.setHours(0, 0, 0, 0);
+    // 🔹 Converte agora pro fuso de São Paulo
+    const zonedNow = toZonedTime(now, TIMEZONE);
 
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
+    // 🔹 Calcula o inicio e fim da semana no fuso de SP
+    const startOfWeekBrazil = startOfWeek(zonedNow, { weekStartsOn: 1 });
+    const endOfWeekBrazil = endOfWeek(zonedNow, { weekStartsOn: 1 });
+
+    // 🔹 Converte esses limites pra UTC
+    const startUTC = fromZonedTime(startOfWeekBrazil, TIMEZONE);
+    const endUTC = fromZonedTime(endOfWeekBrazil, TIMEZONE);
 
     const days = Array.from({ length: 7 }, (_, i) => ({
       day: i + 1,
@@ -225,34 +227,24 @@ export class FinancialOverviewService {
         where: {
           cashAccount: { companyId },
           createdAt: {
-            gte: startOfWeek,
-            lte: endOfWeek,
+            gte: startUTC,
+            lte: endUTC,
           },
         },
       });
 
       for (const t of transactions) {
-        const date = new Date(
-          new Date(t.createdAt).toLocaleString("en-US", {
-            timeZone: "America/Sao_Paulo",
-          }),
-        );
+        // 🕒 Converte cada transação pro fuso de SP
+        const dateBrazil = toZonedTime(t.createdAt, TIMEZONE);
 
-        let dayIndex = date.getDay();
-        dayIndex = dayIndex === 0 ? 7 : dayIndex;
-
+        let dayIndex = dateBrazil.getDay();
         const index = dayIndex - 1;
         const dayItem = days[index];
 
         if (!dayItem) continue;
 
-        if (t.direction === "IN") {
-          dayItem.entry += Number(t.amount);
-        }
-
-        if (t.direction === "OUT") {
-          dayItem.exit += Number(t.amount);
-        }
+        if (t.direction === "IN") dayItem.entry += Number(t.amount);
+        if (t.direction === "OUT") dayItem.exit += Number(t.amount);
       }
 
       const currentMaxEntry = Math.max(...days.map((d) => d.entry));
@@ -260,35 +252,24 @@ export class FinancialOverviewService {
 
       const maxEntryDb = await tx.cashAccountTransaction.aggregate({
         _max: { amount: true },
-        where: {
-          direction: "IN",
-          cashAccount: { companyId },
-        },
+        where: { direction: "IN", cashAccount: { companyId } },
       });
 
       const maxExitDb = await tx.cashAccountTransaction.aggregate({
         _max: { amount: true },
-        where: {
-          direction: "OUT",
-          cashAccount: { companyId },
-        },
+        where: { direction: "OUT", cashAccount: { companyId } },
       });
 
       const maxEntry = Math.max(
         Number(maxEntryDb._max.amount ?? 0),
         currentMaxEntry,
       );
-
       const maxExit = Math.max(
         Number(maxExitDb._max.amount ?? 0),
         currentMaxExit,
       );
 
-      return {
-        days,
-        maxEntry,
-        maxExit,
-      };
+      return { days, maxEntry, maxExit };
     });
 
     return result;
