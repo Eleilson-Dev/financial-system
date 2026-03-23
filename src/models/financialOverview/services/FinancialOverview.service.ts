@@ -205,14 +205,11 @@ export class FinancialOverviewService {
 
     const TIMEZONE = "America/Sao_Paulo";
 
-    // 🔹 Converte agora pro fuso de São Paulo
     const zonedNow = toZonedTime(now, TIMEZONE);
 
-    // 🔹 Calcula o inicio e fim da semana no fuso de SP
     const startOfWeekBrazil = startOfWeek(zonedNow, { weekStartsOn: 1 });
     const endOfWeekBrazil = endOfWeek(zonedNow, { weekStartsOn: 1 });
 
-    // 🔹 Converte esses limites pra UTC
     const startUTC = fromZonedTime(startOfWeekBrazil, TIMEZONE);
     const endUTC = fromZonedTime(endOfWeekBrazil, TIMEZONE);
 
@@ -234,7 +231,6 @@ export class FinancialOverviewService {
       });
 
       for (const t of transactions) {
-        // 🕒 Converte cada transação pro fuso de SP
         const dateBrazil = toZonedTime(t.createdAt, TIMEZONE);
 
         let dayIndex = dateBrazil.getDay();
