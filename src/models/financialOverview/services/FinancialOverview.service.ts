@@ -199,7 +199,9 @@ export class FinancialOverviewService {
   };
 
   getWeeklyGraph = async (companyId: string) => {
-    const now = new Date();
+    const now = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }),
+    );
 
     const startOfWeek = new Date(now);
     const day = startOfWeek.getDay();
@@ -230,7 +232,11 @@ export class FinancialOverviewService {
       });
 
       for (const t of transactions) {
-        const date = new Date(t.createdAt);
+        const date = new Date(
+          new Date(t.createdAt).toLocaleString("en-US", {
+            timeZone: "America/Sao_Paulo",
+          }),
+        );
 
         let dayIndex = date.getDay();
         dayIndex = dayIndex === 0 ? 7 : dayIndex;
