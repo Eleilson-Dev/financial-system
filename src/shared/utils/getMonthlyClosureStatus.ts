@@ -1,12 +1,18 @@
 import dayjs from "dayjs";
 import { getOpenCompetency } from "./getOpenCompetency.js";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
 
 export async function getMonthlyClosureStatus(companyId: string) {
   const { month, year } = await getOpenCompetency(companyId);
 
-  const closeDeadline = dayjs().year(year).month(month).date(5).endOf("day");
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
+  const TZ = "America/Sao_Paulo";
 
-  const today = dayjs();
+  const closeDeadline = dayjs().tz(TZ);
+
+  const today = dayjs().tz(TZ).year(year).month(month).date(5).endOf("day");
 
   const diffDays = Math.floor(closeDeadline.diff(today, "day", true));
   const days = Math.abs(diffDays);
