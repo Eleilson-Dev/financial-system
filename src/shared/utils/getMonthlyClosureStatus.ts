@@ -10,11 +10,16 @@ export async function getMonthlyClosureStatus(companyId: string) {
   dayjs.extend(timezone);
   const TZ = "America/Sao_Paulo";
 
-  const closeDeadline = dayjs().tz(TZ);
+  const today = dayjs().tz(TZ);
 
-  const today = dayjs().tz(TZ).year(year).month(month).date(5).endOf("day");
+  const closeDeadline = dayjs()
+    .tz(TZ)
+    .year(year)
+    .month(month)
+    .date(5)
+    .endOf("day");
 
-  const diffDays = Math.floor(closeDeadline.diff(today, "day", true));
+  const diffDays = closeDeadline.diff(today, "day");
   const days = Math.abs(diffDays);
   const dayLabel = days === 1 ? "dia" : "dias";
 
