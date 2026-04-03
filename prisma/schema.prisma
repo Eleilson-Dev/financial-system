@@ -119,6 +119,9 @@ model Company {
   cashAccount      CashAccount?
   customers        Customer[]
   customerAccounts CustomerAccount[]
+
+  products          Product[]
+  productCategories ProductCategory[]
 }
 
 // ======================================================
@@ -305,6 +308,52 @@ model CashRegisterEntry {
 }
 
 // ======================================================
+// CATEGORIAS DE PRODUTOS (DINÂMICAS)
+// ======================================================
+
+model ProductCategory {
+  id   String @id @default(uuid())
+  name String
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([name, companyId])
+}
+
+// ======================================================
+// PRODUTOS
+// ======================================================
+
+model Product {
+  id    String  @id @default(uuid())
+  name  String
+  price Decimal @db.Decimal(10, 2)
+
+  barcode String? @unique
+
+  stock Int @default(0)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  categoryId String?
+  category   ProductCategory? @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  saleItems SaleItem[]
+
+  @@index([companyId])
+  @@index([barcode])
+}
+
+// ======================================================
 // VENDAS
 // ======================================================
 
@@ -324,8 +373,36 @@ model Sale {
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
 
+  items SaleItem[]
+
   @@index([companyId, createdAt])
   @@index([referenceMonth, referenceYear, companyId])
+}
+
+// ======================================================
+// ITENS DA VENDA (PRODUTOS OU AVULSO)
+// ======================================================
+
+model SaleItem {
+  id String @id @default(uuid())
+
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id])
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+
+  quantity Int
+
+  unitPrice Decimal @db.Decimal(10, 2)
+  total     Decimal @db.Decimal(10, 2)
+
+  nameSnapshot String
+
+  createdAt DateTime @default(now())
+
+  @@index([saleId])
+  @@index([productId])
 }
 
 // ======================================================

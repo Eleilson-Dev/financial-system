@@ -136,6 +136,31 @@ CREATE TABLE "CashRegisterEntry" (
 );
 
 -- CreateTable
+CREATE TABLE "ProductCategory" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "companyId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ProductCategory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Product" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "price" DECIMAL(10,2) NOT NULL,
+    "barcode" TEXT,
+    "stock" INTEGER NOT NULL DEFAULT 0,
+    "companyId" TEXT NOT NULL,
+    "categoryId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Sale" (
     "id" TEXT NOT NULL,
     "amount" DECIMAL(10,2) NOT NULL,
@@ -147,6 +172,20 @@ CREATE TABLE "Sale" (
     "createdById" TEXT NOT NULL,
 
     CONSTRAINT "Sale_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SaleItem" (
+    "id" TEXT NOT NULL,
+    "saleId" TEXT NOT NULL,
+    "productId" TEXT,
+    "quantity" INTEGER NOT NULL,
+    "unitPrice" DECIMAL(10,2) NOT NULL,
+    "total" DECIMAL(10,2) NOT NULL,
+    "nameSnapshot" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "SaleItem_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -277,6 +316,42 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "CashAccount_companyId_key" ON "CashAccount"("companyId");
 
 -- CreateIndex
+CREATE INDEX "CashAccountTransaction_cashAccountId_createdAt_idx" ON "CashAccountTransaction"("cashAccountId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "CashAccountTransaction_referenceMonth_referenceYear_idx" ON "CashAccountTransaction"("referenceMonth", "referenceYear");
+
+-- CreateIndex
+CREATE INDEX "CashRegisterEntry_cashRegisterId_createdAt_idx" ON "CashRegisterEntry"("cashRegisterId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "CashRegisterEntry_referenceMonth_referenceYear_idx" ON "CashRegisterEntry"("referenceMonth", "referenceYear");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductCategory_name_companyId_key" ON "ProductCategory"("name", "companyId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Product_barcode_key" ON "Product"("barcode");
+
+-- CreateIndex
+CREATE INDEX "Product_companyId_idx" ON "Product"("companyId");
+
+-- CreateIndex
+CREATE INDEX "Product_barcode_idx" ON "Product"("barcode");
+
+-- CreateIndex
+CREATE INDEX "Sale_companyId_createdAt_idx" ON "Sale"("companyId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Sale_referenceMonth_referenceYear_companyId_idx" ON "Sale"("referenceMonth", "referenceYear", "companyId");
+
+-- CreateIndex
+CREATE INDEX "SaleItem_saleId_idx" ON "SaleItem"("saleId");
+
+-- CreateIndex
+CREATE INDEX "SaleItem_productId_idx" ON "SaleItem"("productId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Employee_cpf_key" ON "Employee"("cpf");
 
 -- CreateIndex
@@ -322,10 +397,25 @@ ALTER TABLE "CashRegister" ADD CONSTRAINT "CashRegister_closedById_fkey" FOREIGN
 ALTER TABLE "CashRegisterEntry" ADD CONSTRAINT "CashRegisterEntry_cashRegisterId_fkey" FOREIGN KEY ("cashRegisterId") REFERENCES "CashRegister"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ProductCategory" ADD CONSTRAINT "ProductCategory_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Product" ADD CONSTRAINT "Product_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "ProductCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Sale" ADD CONSTRAINT "Sale_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Sale" ADD CONSTRAINT "Sale_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SaleItem" ADD CONSTRAINT "SaleItem_saleId_fkey" FOREIGN KEY ("saleId") REFERENCES "Sale"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SaleItem" ADD CONSTRAINT "SaleItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Employee" ADD CONSTRAINT "Employee_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
