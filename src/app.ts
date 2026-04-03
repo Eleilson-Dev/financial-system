@@ -11,6 +11,7 @@ import { companyRouter } from "./models/company/routes/routes.js";
 import { HandleErrors } from "./shared/errors/HandleErrors.js";
 import { userRouter } from "./models/user/routes/routes.js";
 import { cashRouter } from "./models/cash/routes/routes.js";
+import { productCategoryRouter } from "./models/ProductCategory/routes/routes.js";
 import { saleRouter } from "./models/sale/routes/routes.js";
 import { employeeRouter } from "./models/employee/routes/routes.js";
 import { salaryPaymentRouter } from "./models/salaryPayment/routes/routes.js";
@@ -33,14 +34,11 @@ app.get("/", (req, res) => {
   res.send("API online 🚀");
 });
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
-
 app.use("/financial/system", companyRouter);
 app.use("/financial/system", userRouter);
 app.use("/financial/system", cashRouter);
 app.use("/financial/system", saleRouter);
+app.use("/financial/system", productCategoryRouter);
 app.use("/financial/system", employeeRouter);
 app.use("/financial/system", salaryPaymentRouter);
 app.use("/financial/system", SalaryPaymentHistoryRouter);
