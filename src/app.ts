@@ -29,6 +29,14 @@ app.use(json());
 
 swaggerSetup(app);
 
+app.get("/", (req, res) => {
+  res.send("API online 🚀");
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.use("/financial/system", companyRouter);
 app.use("/financial/system", userRouter);
 app.use("/financial/system", cashRouter);
