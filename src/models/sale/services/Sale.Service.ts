@@ -1,11 +1,25 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../../../config/db/database.js";
-import type { TCreateSaleSchema } from "../schema/schema.js";
 import { AppError } from "../../../shared/errors/AppError.js";
 import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
 import { io } from "../../../server.js";
+
+interface TSaleItemInput {
+  productId?: string; // produto cadastrado ou undefined se avulso
+  name?: string; // usado para avulso
+  categoryId?: string; // usado para snapshot
+  categoryName?: string; // usado para avulso
+  quantity: number;
+  unitPrice: number;
+}
+
+interface TCreateSaleSchema {
+  amount: number;
+  paymentMethod: "CASH" | "DEBIT" | "CREDIT" | "PIX" | "ACCOUNT";
+  items: TSaleItemInput[];
+}
 
 @injectable()
 export class SaleService {
@@ -44,6 +58,64 @@ export class SaleService {
             createdById: userId,
           },
         });
+
+        for (const item of saleData.items) {
+          let product;
+
+          if (item.productId) {
+            product = await tx.product.findUnique({
+              where: { id: item.productId },
+              include: { category: true },
+            });
+            if (!product) throw new AppError(400, "Product not found");
+
+            if (product.stock !== null) {
+              const currentStock = Number(product.stock);
+
+              if (currentStock < item.quantity) {
+                throw new AppError(
+                  400,
+                  `Insufficient stock for product ${product.name}`,
+                );
+              }
+            }
+          }
+
+          await tx.saleItem.create({
+            data: {
+              saleId: sale.id,
+              productId: item.productId || null,
+              nameSnapshot: item.name || product?.name || "Venda Avulsa",
+              categoryId: item.categoryId || product?.categoryId || null,
+              categoryNameSnapshot:
+                item.categoryName || product?.category?.name || "Avulso",
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              total: new Prisma.Decimal(item.quantity).times(item.unitPrice),
+            },
+          });
+
+          // Se o produto tem estoque, descontamos a quantidade vendida
+          if (product) {
+            const decrement =
+              product.stockType === "UNIT"
+                ? item.quantity
+                : new Prisma.Decimal(item.quantity); // caso kilo
+
+            await tx.product.update({
+              where: { id: product.id },
+              data: { stock: { decrement } },
+            });
+
+            await tx.stockMovement.create({
+              data: {
+                productId: product.id,
+                type: "SALE",
+                quantity: item.quantity,
+              },
+            });
+          }
+        }
 
         await tx.cashRegisterEntry.create({
           data: {

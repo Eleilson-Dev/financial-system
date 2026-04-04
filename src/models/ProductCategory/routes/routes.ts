@@ -6,6 +6,7 @@ import { VerifyToken } from "../../../shared/middlewares/VerifyToken.middleware.
 import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middleware.js";
 import { productCategorySchema } from "../schema/schema.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
+import { ValidateCategoryExistence } from "../middlewares/ValidateCategoryExistence.middleware.js";
 
 container.registerSingleton("ProductCategoryService", ProductCategoryService);
 const productCategoryController = container.resolve(ProductCategoryController);
@@ -17,5 +18,13 @@ productCategoryRouter.post(
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
   ValidateBody.execute(productCategorySchema),
+  ValidateCategoryExistence.execute,
   (req, res) => productCategoryController.createCategory(req, res),
+);
+
+productCategoryRouter.get(
+  "/list/categories",
+  VerifyToken.execute,
+  AttachMonthlyClosureStatus.execute,
+  (req, res) => productCategoryController.listCategoris(req, res),
 );

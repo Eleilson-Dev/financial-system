@@ -11,6 +11,21 @@ export class ProductCategoryController {
   createCategory = async (req: Request, res: Response) => {
     const encodedToken = res.locals.encodedToken;
 
-    res.status(201).json({ satus: "ok" });
+    const response = await this.productCategoryService.createCategory(
+      req.body.name,
+      encodedToken.companyId,
+    );
+
+    res.status(201).json(response);
+  };
+
+  listCategoris = async (req: Request, res: Response) => {
+    const encodedToken = res.locals.encodedToken;
+
+    const response = await this.productCategoryService.listCategoris(
+      encodedToken.companyId,
+    );
+
+    res.status(200).json(response);
   };
 }

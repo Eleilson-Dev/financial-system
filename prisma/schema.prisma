@@ -29,6 +29,7 @@ enum PaymentMethod {
   DEBIT
   PIX
   CASH
+  ACCOUNT
 }
 
 // Status de um caixa
@@ -91,6 +92,17 @@ enum CashRegisterEntryReferenceType {
 enum CustomerTransactionReferenceType {
   DEBT
   PAYMENT
+}
+
+enum StockType {
+  UNIT // estoque por unidade
+  KILO // estoque por quilo
+}
+
+enum StockMovementType {
+  SALE // venda
+  ADD // reposição
+  LOSS // estragou/descarte
 }
 
 // ======================================================
@@ -330,13 +342,12 @@ model ProductCategory {
 // ======================================================
 
 model Product {
-  id    String  @id @default(uuid())
-  name  String
-  price Decimal @db.Decimal(10, 2)
-
-  barcode String?
-
-  stock Int @default(0)
+  id        String    @id @default(uuid())
+  name      String
+  price     Decimal   @db.Decimal(10, 2)
+  barcode   String
+  stock     Decimal?  @db.Decimal(10, 2) // permite unidades ou kg
+  stockType StockType @default(UNIT) // define se é por unidade ou por quilo
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
@@ -349,10 +360,20 @@ model Product {
 
   saleItems SaleItem[]
 
-  // 🔥 evita conflito entre empresas
+  stockMovements StockMovement[]
+
   @@unique([barcode, companyId])
   @@index([companyId])
   @@index([barcode])
+}
+
+model StockMovement {
+  id        String            @id @default(uuid())
+  productId String
+  product   Product           @relation(fields: [productId], references: [id])
+  type      StockMovementType
+  quantity  Decimal           @db.Decimal(10, 2)
+  createdAt DateTime          @default(now())
 }
 
 // ======================================================
@@ -391,20 +412,16 @@ model SaleItem {
   saleId String
   sale   Sale   @relation(fields: [saleId], references: [id])
 
-  productId String?
+  productId String? // NULL para produtos avulsos
   product   Product? @relation(fields: [productId], references: [id])
 
-  // 🔥 SNAPSHOT DO PRODUTO
-  nameSnapshot String
+  nameSnapshot         String // sempre preencher: nome do produto ou "Venda Avulsa"
+  categoryId           String? // NULL para produtos avulsos
+  categoryNameSnapshot String? // NULL ou "Avulso"
 
-  // 🔥 SNAPSHOT DA CATEGORIA (IMPORTANTE PRA RELATÓRIO)
-  categoryId           String?
-  categoryNameSnapshot String?
-
-  quantity Int
-
+  quantity  Int
   unitPrice Decimal @db.Decimal(10, 2)
-  total     Decimal @db.Decimal(10, 2)
+  total     Decimal @db.Decimal(10, 2) // quantity * unitPrice
 
   createdAt DateTime @default(now())
 

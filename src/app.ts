@@ -21,6 +21,7 @@ import { expenseRouter } from "./models/expense/routes/routes.js";
 import { monthlyClosureRouter } from "./models/monthlyClosure/routes/routes.js";
 import { customerRouter } from "./models/customer/routes/routes.js";
 import { financialOverviewRouter } from "./models/financialOverview/routes/routes.js";
+import { productRouter } from "./models/Product/routes/routes.js";
 
 export const app = express();
 
@@ -39,6 +40,7 @@ app.use("/financial/system", userRouter);
 app.use("/financial/system", cashRouter);
 app.use("/financial/system", saleRouter);
 app.use("/financial/system", productCategoryRouter);
+app.use("/financial/system", productRouter);
 app.use("/financial/system", employeeRouter);
 app.use("/financial/system", salaryPaymentRouter);
 app.use("/financial/system", SalaryPaymentHistoryRouter);
