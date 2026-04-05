@@ -233,8 +233,8 @@ export class FinancialOverviewService {
       for (const t of transactions) {
         const dateBrazil = toZonedTime(t.createdAt, TIMEZONE);
 
-        let dayIndex = dateBrazil.getDay();
-        const index = dayIndex - 1;
+        let dayIndex = dateBrazil.getDay(); // 0 = domingo, 1 = segunda ...
+        const index = dayIndex === 0 ? 6 : dayIndex - 1; // Domingo = 6
         const dayItem = days[index];
 
         if (!dayItem) continue;

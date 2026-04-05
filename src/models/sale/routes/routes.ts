@@ -10,6 +10,7 @@ import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMo
 import { ValidatePrivilegedPassword } from "../../../shared/middlewares/ValidatePrivilegedPassword.middleware.js";
 import { ProductExists } from "../middlewares/ProductExists.middlewares.js";
 import { ValidateStock } from "../middlewares/ValidateStock.middleware.js";
+import { CleanSaleItems } from "../middlewares/CleanSaleItems.middleware.js";
 
 container.registerSingleton("SaleService", SaleService);
 const saleController = container.resolve(SaleController);
@@ -29,6 +30,7 @@ saleRouter.post(
   AttachMonthlyClosureStatus.execute,
   ValidateBody.execute(createSaleSchema),
   ProductExists.execute,
+  CleanSaleItems.execute,
   ValidateStock.execute,
   RequireOpenCash.execute,
   (req, res) => saleController.registerSale(req, res),

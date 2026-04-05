@@ -9,6 +9,8 @@ export class ValidateStock {
     const items = req.body.items;
     const { companyId } = res.locals.encodedToken;
 
+    console.log(JSON.stringify(req.body, null, 2));
+
     if (!items || !Array.isArray(items)) {
       throw new AppError(400, "Items not provided or invalid");
     }
