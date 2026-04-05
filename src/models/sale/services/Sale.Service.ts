@@ -5,20 +5,15 @@ import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
 import { io } from "../../../server.js";
-
-interface TSaleItemInput {
-  productId?: string; // produto cadastrado ou undefined se avulso
-  name?: string; // usado para avulso
-  categoryId?: string; // usado para snapshot
-  categoryName?: string; // usado para avulso
-  quantity: number;
-  unitPrice: number;
-}
+import { parseBarcode } from "../utils/parseBarcode.js";
 
 interface TCreateSaleSchema {
-  amount: number;
   paymentMethod: "CASH" | "DEBIT" | "CREDIT" | "PIX" | "ACCOUNT";
-  items: TSaleItemInput[];
+  items: {
+    barcode: string;
+    quantity: number;
+    unitPrice: number;
+  }[];
 }
 
 @injectable()
@@ -48,74 +43,99 @@ export class SaleService {
       const { month, year } = await getOpenCompetency(companyId);
 
       const result = await prisma.$transaction(async (tx) => {
-        const productsMap = new Map();
+        const itemsData: any[] = [];
 
         for (const item of saleData.items) {
-          if (item.productId) {
-            const product = await tx.product.findUnique({
-              where: { id: item.productId },
-              include: { category: true },
-            });
+          const parsed = parseBarcode(item.barcode);
 
-            if (!product) throw new AppError(400, "Product not found");
+          const product = await tx.product.findFirst({
+            where: { barcode: parsed.productCode, companyId },
+            include: { category: true },
+          });
 
-            const quantityDecimal = new Prisma.Decimal(item.quantity);
+          if (!product) throw new AppError(400, "Product not found");
 
-            if (product.stock !== null) {
-              if (product.stock.lessThan(quantityDecimal)) {
-                throw new AppError(
-                  400,
-                  `Insufficient stock for product ${product.name}`,
-                );
-              }
+          let quantity: Prisma.Decimal;
+          let unitPrice: Prisma.Decimal;
+
+          if (product.stockType === "KILO") {
+            if (parsed.type !== "weighted") {
+              throw new AppError(400, "Invalid barcode for weighted product");
             }
 
-            productsMap.set(item.productId, product);
+            quantity = new Prisma.Decimal(parsed.weight);
+            unitPrice = product.price;
+          } else {
+            const requestedQuantity = item.quantity ? Number(item.quantity) : 1;
+            quantity = new Prisma.Decimal(requestedQuantity);
+            unitPrice = product.price;
+
+            if (
+              product.barcode === "00000" &&
+              product.price.equals(new Prisma.Decimal(0))
+            ) {
+              if (!item.unitPrice) {
+                throw new AppError(
+                  400,
+                  "Unit price is required for Avulso product",
+                );
+              }
+              unitPrice = new Prisma.Decimal(item.unitPrice);
+            } else {
+              unitPrice = product.price;
+            }
           }
+
+          if (product.stock !== null) {
+            if (product.stock.lessThan(quantity)) {
+              throw new AppError(
+                400,
+                `Insufficient stock for product ${product.name}`,
+              );
+            }
+          }
+
+          itemsData.push({
+            product,
+            quantity,
+            unitPrice,
+          });
         }
+
+        const totalAmount = itemsData.reduce((acc, item) => {
+          return acc.plus(item.quantity.times(item.unitPrice));
+        }, new Prisma.Decimal(0));
 
         const sale = await tx.sale.create({
           data: {
-            amount: new Prisma.Decimal(saleData.amount),
+            amount: totalAmount,
             paymentMethod: saleData.paymentMethod,
             referenceMonth: month,
             referenceYear: year,
             companyId,
             createdById: userId,
             items: {
-              create: saleData.items.map((item) => {
-                const product = productsMap.get(item.productId);
-
-                const quantityDecimal = new Prisma.Decimal(item.quantity);
-                const unitPriceDecimal = new Prisma.Decimal(item.unitPrice);
-
-                return {
-                  productId: item.productId || null,
-                  nameSnapshot: item.name || product?.name || "Venda Avulsa",
-                  categoryId: item.categoryId || product?.categoryId || null,
-                  categoryNameSnapshot:
-                    item.categoryName || product?.category?.name || "Avulso",
-                  quantity: quantityDecimal,
-                  unitPrice: unitPriceDecimal,
-                  total: quantityDecimal.times(unitPriceDecimal),
-                };
-              }),
+              create: itemsData.map(({ product, quantity, unitPrice }) => ({
+                productId: product.id,
+                nameSnapshot: product.name,
+                categoryId: product.categoryId,
+                categoryNameSnapshot: product.category?.name || "Avulso",
+                quantity,
+                unitPrice,
+                total: quantity.times(unitPrice),
+              })),
             },
           },
           include: { items: true },
         });
 
-        for (const item of saleData.items) {
-          const product = productsMap.get(item.productId);
-
-          if (!product) continue;
-
-          const quantityDecimal = new Prisma.Decimal(item.quantity);
+        for (const item of itemsData) {
+          const { product, quantity } = item;
 
           await tx.product.update({
             where: { id: product.id },
             data: {
-              stock: { decrement: quantityDecimal },
+              stock: { decrement: quantity },
             },
           });
 
@@ -123,7 +143,7 @@ export class SaleService {
             data: {
               productId: product.id,
               type: "SALE",
-              quantity: quantityDecimal,
+              quantity: quantity,
               unitType: product.stockType,
             },
           });
@@ -131,7 +151,7 @@ export class SaleService {
 
         await tx.cashRegisterEntry.create({
           data: {
-            amount: saleData.amount,
+            amount: totalAmount,
             direction: "IN",
             paymentMethod: saleData.paymentMethod,
             description: "Venda registrada",
@@ -146,14 +166,14 @@ export class SaleService {
         const cashAccount = await tx.cashAccount.update({
           where: { companyId },
           data: {
-            balance: { increment: saleData.amount },
+            balance: { increment: totalAmount },
           },
         });
 
         await tx.cashAccountTransaction.create({
           data: {
             cashAccountId: cashAccount.id,
-            amount: saleData.amount,
+            amount: totalAmount,
             type: "SALE",
             description: "Venda registrada",
             performedById: userId,
@@ -166,10 +186,7 @@ export class SaleService {
 
         await tx.cashRegister.update({
           where: { id: cashRegisterId },
-          data: buildCashRegisterUpdate(
-            saleData.paymentMethod,
-            new Prisma.Decimal(saleData.amount),
-          ),
+          data: buildCashRegisterUpdate(saleData.paymentMethod, totalAmount),
         });
 
         return sale;

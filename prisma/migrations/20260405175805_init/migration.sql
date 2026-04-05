@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "PaymentMethod" AS ENUM ('CREDIT', 'DEBIT', 'PIX', 'CASH');
+CREATE TYPE "PaymentMethod" AS ENUM ('CREDIT', 'DEBIT', 'PIX', 'CASH', 'ACCOUNT');
 
 -- CreateEnum
 CREATE TYPE "CashStatus" AS ENUM ('OPEN', 'CLOSED');
@@ -27,6 +27,12 @@ CREATE TYPE "CashRegisterEntryReferenceType" AS ENUM ('SALE', 'CUSTOMER_ACCOUNT'
 
 -- CreateEnum
 CREATE TYPE "CustomerTransactionReferenceType" AS ENUM ('DEBT', 'PAYMENT');
+
+-- CreateEnum
+CREATE TYPE "StockType" AS ENUM ('UNIT', 'KILO');
+
+-- CreateEnum
+CREATE TYPE "StockMovementType" AS ENUM ('SALE', 'ADD', 'LOSS');
 
 -- CreateTable
 CREATE TABLE "Company" (
@@ -150,14 +156,27 @@ CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "price" DECIMAL(10,2) NOT NULL,
-    "barcode" TEXT,
-    "stock" INTEGER NOT NULL DEFAULT 0,
+    "barcode" TEXT NOT NULL,
+    "stock" DECIMAL(10,2),
+    "stockType" "StockType" NOT NULL DEFAULT 'UNIT',
     "companyId" TEXT NOT NULL,
     "categoryId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "StockMovement" (
+    "id" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
+    "type" "StockMovementType" NOT NULL,
+    "unitType" "StockType",
+    "quantity" DECIMAL(10,2) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "StockMovement_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -179,10 +198,12 @@ CREATE TABLE "SaleItem" (
     "id" TEXT NOT NULL,
     "saleId" TEXT NOT NULL,
     "productId" TEXT,
-    "quantity" INTEGER NOT NULL,
+    "nameSnapshot" TEXT NOT NULL,
+    "categoryId" TEXT,
+    "categoryNameSnapshot" TEXT,
+    "quantity" DECIMAL(10,3) NOT NULL,
     "unitPrice" DECIMAL(10,2) NOT NULL,
     "total" DECIMAL(10,2) NOT NULL,
-    "nameSnapshot" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "SaleItem_pkey" PRIMARY KEY ("id")
@@ -331,13 +352,13 @@ CREATE INDEX "CashRegisterEntry_referenceMonth_referenceYear_idx" ON "CashRegist
 CREATE UNIQUE INDEX "ProductCategory_name_companyId_key" ON "ProductCategory"("name", "companyId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Product_barcode_key" ON "Product"("barcode");
-
--- CreateIndex
 CREATE INDEX "Product_companyId_idx" ON "Product"("companyId");
 
 -- CreateIndex
 CREATE INDEX "Product_barcode_idx" ON "Product"("barcode");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Product_barcode_companyId_key" ON "Product"("barcode", "companyId");
 
 -- CreateIndex
 CREATE INDEX "Sale_companyId_createdAt_idx" ON "Sale"("companyId", "createdAt");
@@ -350,6 +371,9 @@ CREATE INDEX "SaleItem_saleId_idx" ON "SaleItem"("saleId");
 
 -- CreateIndex
 CREATE INDEX "SaleItem_productId_idx" ON "SaleItem"("productId");
+
+-- CreateIndex
+CREATE INDEX "SaleItem_categoryId_idx" ON "SaleItem"("categoryId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Employee_cpf_key" ON "Employee"("cpf");
@@ -404,6 +428,9 @@ ALTER TABLE "Product" ADD CONSTRAINT "Product_companyId_fkey" FOREIGN KEY ("comp
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "ProductCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "StockMovement" ADD CONSTRAINT "StockMovement_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Sale" ADD CONSTRAINT "Sale_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

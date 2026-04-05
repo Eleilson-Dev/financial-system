@@ -41,6 +41,15 @@ export class CompanyService {
           },
         });
 
+        await tx.product.create({
+          data: {
+            name: "Avulso",
+            barcode: "00000",
+            price: 0,
+            companyId: company.id,
+          },
+        });
+
         const { password, ...owner } = newOwner;
 
         return { company, cashAccount, owner };

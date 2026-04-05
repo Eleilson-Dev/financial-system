@@ -342,12 +342,14 @@ model ProductCategory {
 // ======================================================
 
 model Product {
-  id        String    @id @default(uuid())
-  name      String
-  price     Decimal   @db.Decimal(10, 2)
-  barcode   String
-  stock     Decimal?  @db.Decimal(10, 2) // permite unidades ou kg
-  stockType StockType @default(UNIT) // define se é por unidade ou por quilo
+  id   String @id @default(uuid())
+  name String
+
+  price   Decimal @db.Decimal(10, 2) // preço base (unitário OU por kg)
+  barcode String
+
+  stock     Decimal?  @db.Decimal(10, 2)
+  stockType StockType @default(UNIT) // UNIT | KG
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
@@ -358,8 +360,7 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  saleItems SaleItem[]
-
+  saleItems      SaleItem[]
   stockMovements StockMovement[]
 
   @@unique([barcode, companyId])

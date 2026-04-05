@@ -22,8 +22,6 @@ export class ProductController {
       categoryId: req.body.categoryId,
     });
 
-    console.log(req.body);
-
     res.status(201).json(response);
   };
 }

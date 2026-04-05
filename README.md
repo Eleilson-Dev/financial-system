@@ -12,3 +12,8 @@ corepack enable && corepack prepare yarn@4.11.0 --activate && yarn install --imm
 "migrate:dev": "dotenv -e .env.local -- prisma migrate deploy",
 "migrate:prod": "dotenv -e .env -- prisma migrate deploy"
 },
+
+config do codigo da balanca
+
+PP + CCCCC + WWWWW + D
+22 + 54321 + 00750 + X

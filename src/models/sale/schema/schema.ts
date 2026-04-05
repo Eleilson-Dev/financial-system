@@ -2,25 +2,24 @@ import { z } from "zod";
 import { PaymentMethod } from "../../../../generated/prisma/enums.js";
 
 const saleItemSchema = z.object({
-  productId: z.string().uuid("ID do produto inválido").optional(),
+  barcode: z.string().min(5, "Código de barras inválido").optional(),
+
   name: z.string().optional(),
   categoryId: z.string().uuid("ID da categoria inválido").optional(),
   categoryName: z.string().optional(),
+
   quantity: z.preprocess(
     (val) => Number(val),
-    z.number().min(1, "A quantidade deve ser maior que zero."),
+    z.number().min(0.001, "Quantidade deve ser maior que zero.").optional(),
   ),
+
   unitPrice: z.preprocess(
     (val) => Number(val),
-    z.number().min(0.01, "O preço unitário deve ser maior que zero."),
+    z.number().min(0.01, "Preço inválido.").optional(),
   ),
 });
 
 export const createSaleSchema = z.object({
-  amount: z.preprocess(
-    (val) => Number(val),
-    z.number().min(0.01, "O valor deve ser maior que zero."),
-  ),
   paymentMethod: z
     .nativeEnum(PaymentMethod)
     .refine((val) => Object.values(PaymentMethod).includes(val), {
