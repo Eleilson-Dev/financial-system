@@ -372,8 +372,11 @@ model StockMovement {
   productId String
   product   Product           @relation(fields: [productId], references: [id])
   type      StockMovementType
-  quantity  Decimal           @db.Decimal(10, 2)
-  createdAt DateTime          @default(now())
+
+  unitType StockType?
+
+  quantity  Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
 }
 
 // ======================================================
@@ -419,7 +422,7 @@ model SaleItem {
   categoryId           String? // NULL para produtos avulsos
   categoryNameSnapshot String? // NULL ou "Avulso"
 
-  quantity  Int
+  quantity  Decimal @db.Decimal(10, 3)
   unitPrice Decimal @db.Decimal(10, 2)
   total     Decimal @db.Decimal(10, 2) // quantity * unitPrice
 

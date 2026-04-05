@@ -48,73 +48,85 @@ export class SaleService {
       const { month, year } = await getOpenCompetency(companyId);
 
       const result = await prisma.$transaction(async (tx) => {
-        const sale = await tx.sale.create({
-          data: {
-            amount: saleData.amount,
-            paymentMethod: saleData.paymentMethod,
-            referenceMonth: month,
-            referenceYear: year,
-            companyId,
-            createdById: userId,
-          },
-        });
+        const productsMap = new Map();
 
         for (const item of saleData.items) {
-          let product;
-
           if (item.productId) {
-            product = await tx.product.findUnique({
+            const product = await tx.product.findUnique({
               where: { id: item.productId },
               include: { category: true },
             });
+
             if (!product) throw new AppError(400, "Product not found");
 
-            if (product.stock !== null) {
-              const currentStock = Number(product.stock);
+            const quantityDecimal = new Prisma.Decimal(item.quantity);
 
-              if (currentStock < item.quantity) {
+            if (product.stock !== null) {
+              if (product.stock.lessThan(quantityDecimal)) {
                 throw new AppError(
                   400,
                   `Insufficient stock for product ${product.name}`,
                 );
               }
             }
-          }
 
-          await tx.saleItem.create({
+            productsMap.set(item.productId, product);
+          }
+        }
+
+        const sale = await tx.sale.create({
+          data: {
+            amount: new Prisma.Decimal(saleData.amount),
+            paymentMethod: saleData.paymentMethod,
+            referenceMonth: month,
+            referenceYear: year,
+            companyId,
+            createdById: userId,
+            items: {
+              create: saleData.items.map((item) => {
+                const product = productsMap.get(item.productId);
+
+                const quantityDecimal = new Prisma.Decimal(item.quantity);
+                const unitPriceDecimal = new Prisma.Decimal(item.unitPrice);
+
+                return {
+                  productId: item.productId || null,
+                  nameSnapshot: item.name || product?.name || "Venda Avulsa",
+                  categoryId: item.categoryId || product?.categoryId || null,
+                  categoryNameSnapshot:
+                    item.categoryName || product?.category?.name || "Avulso",
+                  quantity: quantityDecimal,
+                  unitPrice: unitPriceDecimal,
+                  total: quantityDecimal.times(unitPriceDecimal),
+                };
+              }),
+            },
+          },
+          include: { items: true },
+        });
+
+        for (const item of saleData.items) {
+          const product = productsMap.get(item.productId);
+
+          if (!product) continue;
+
+          const quantityDecimal = new Prisma.Decimal(item.quantity);
+
+          await tx.product.update({
+            where: { id: product.id },
             data: {
-              saleId: sale.id,
-              productId: item.productId || null,
-              nameSnapshot: item.name || product?.name || "Venda Avulsa",
-              categoryId: item.categoryId || product?.categoryId || null,
-              categoryNameSnapshot:
-                item.categoryName || product?.category?.name || "Avulso",
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              total: new Prisma.Decimal(item.quantity).times(item.unitPrice),
+              stock: { decrement: quantityDecimal },
             },
           });
 
-          // Se o produto tem estoque, descontamos a quantidade vendida
-          if (product) {
-            const decrement =
-              product.stockType === "UNIT"
-                ? item.quantity
-                : new Prisma.Decimal(item.quantity); // caso kilo
-
-            await tx.product.update({
-              where: { id: product.id },
-              data: { stock: { decrement } },
-            });
-
-            await tx.stockMovement.create({
-              data: {
-                productId: product.id,
-                type: "SALE",
-                quantity: item.quantity,
-              },
-            });
-          }
+          await tx.stockMovement.create({
+            data: {
+              productId: product.id,
+              type: "SALE",
+              quantity: quantityDecimal,
+              unitType: product.stockType,
+            },
+          });
         }
 
         await tx.cashRegisterEntry.create({
