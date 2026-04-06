@@ -24,4 +24,26 @@ export class ProductController {
 
     res.status(201).json(response);
   };
+
+  getProductByBarcode = async (req: Request, res: Response) => {
+    const product = res.locals.product;
+    const quantity = res.locals.quantity;
+
+    res.status(200).json({
+      barcode: product.barcode,
+      quantity,
+      product: {
+        id: product.id,
+        name: product.name,
+        price: product.price.toString(),
+        barcode: product.barcode,
+        stock: product.stock.toString(),
+        stockType: product.stockType,
+        companyId: product.companyId,
+        categoryId: product.categoryId,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+      },
+    });
+  };
 }

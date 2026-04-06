@@ -1,7 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../../../config/db/database.js";
 import { AppError } from "../../../shared/errors/AppError.js";
-import { parseBarcode, type ParsedBarcode } from "../utils/parseBarcode.js";
+import {
+  parseBarcode,
+  type ParsedBarcode,
+} from "../../../shared/utils/parseBarcode.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
 
 export class ValidateStock {

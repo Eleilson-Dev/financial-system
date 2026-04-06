@@ -37,4 +37,17 @@ export class ProductService {
       throw new AppError(400, "Error while trying to create a product");
     }
   };
+
+  getProductByBarcode = async (barcode: string, companyId: string) => {
+    try {
+      const product = await prisma.product.findFirst({
+        where: { barcode, companyId },
+      });
+
+      return product;
+    } catch (error) {
+      console.log(error);
+      throw new AppError(400, "Error while trying to search for the product.");
+    }
+  };
 }

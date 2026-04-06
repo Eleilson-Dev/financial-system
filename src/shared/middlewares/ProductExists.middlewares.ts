@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
-import { prisma } from "../../../config/db/database.js";
-import { AppError } from "../../../shared/errors/AppError.js";
+import { prisma } from "../../config/db/database.js";
+import { AppError } from "../errors/AppError.js";
 import { parseBarcode, type ParsedBarcode } from "../utils/parseBarcode.js";
 
 export class ProductExists {

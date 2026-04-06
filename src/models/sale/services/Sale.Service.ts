@@ -5,7 +5,7 @@ import { getOpenCompetency } from "../../../shared/utils/getOpenCompetency.js";
 import { buildCashRegisterUpdate } from "../../../shared/utils/buildCashRegisterUpdate.js";
 import { Prisma } from "../../../../generated/prisma/client.js";
 import { io } from "../../../server.js";
-import { parseBarcode } from "../utils/parseBarcode.js";
+import { parseBarcode } from "../../../shared/utils/parseBarcode.js";
 
 interface TCreateSaleSchema {
   paymentMethod: "CASH" | "DEBIT" | "CREDIT" | "PIX" | "ACCOUNT";
