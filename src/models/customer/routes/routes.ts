@@ -16,7 +16,7 @@ import { AlreadyPayDebit } from "../../../shared/middlewares/AlreadyPayDebit.mid
 import { RequireOpenCash } from "../../../shared/middlewares/RequireOpenCash.middleware.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 import { IsCpfExits } from "../../../shared/middlewares/IsCpfExists.middleware copy.js";
-import { ValidateQuery } from "../../../shared/middlewares/ValidateQuery.middleware copy.js";
+import { ValidateQuery } from "../../../shared/middlewares/ValidateQuery.middleware.js";
 import { ValidatePrivilegedPassword } from "../../../shared/middlewares/ValidatePrivilegedPassword.middleware.js";
 
 container.registerSingleton("CustomerService", CustomerService);

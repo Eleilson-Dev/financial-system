@@ -7,6 +7,7 @@ import { ValidateBody } from "../../../shared/middlewares/ValidateBody.middlewar
 import { createProductSchema, searchProductSchema } from "../schema/schema.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 import { VerifyProductAndStock } from "../middlewares/VerifyProductAndStock.middleware.js";
+import { ValidateQuery } from "../../../shared/middlewares/ValidateQuery.middleware.js";
 
 container.registerSingleton("ProductService", ProductService);
 const productController = container.resolve(ProductController);
@@ -22,10 +23,10 @@ productRouter.post(
 );
 
 productRouter.get(
-  "/find/product",
+  "/check-product",
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
-  ValidateBody.execute(searchProductSchema),
+  ValidateQuery.execute(searchProductSchema),
   VerifyProductAndStock.execute,
   (req, res) => productController.getProductByBarcode(req, res),
 );

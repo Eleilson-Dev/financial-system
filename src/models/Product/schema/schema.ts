@@ -19,9 +19,6 @@ export const createProductSchema = z.object({
 });
 
 export const searchProductSchema = z.object({
-  barcode: z.string().min(5, "Código de barras inválido"),
-  quantity: z.preprocess(
-    (val) => Number(val),
-    z.number().min(0.001, "Quantidade deve ser maior que zero.").optional(),
-  ),
+  barcode: z.string(),
+  quantity: z.coerce.number().optional(),
 });

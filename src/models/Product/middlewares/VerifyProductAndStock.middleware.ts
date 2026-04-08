@@ -8,7 +8,11 @@ import {
 
 export class VerifyProductAndStock {
   static async execute(req: Request, res: Response, next: NextFunction) {
-    const { barcode, quantity: bodyQuantity } = req.body;
+    const { barcode, quantity: queryQuantity } = req.query as {
+      barcode?: string;
+      quantity?: string;
+    };
+
     const { companyId } = res.locals.encodedToken;
 
     if (!barcode) {
@@ -18,6 +22,8 @@ export class VerifyProductAndStock {
     let parsed: ParsedBarcode | null = null;
     let quantity: number;
     let productCode = barcode;
+
+    const bodyQuantity = queryQuantity ? Number(queryQuantity) : undefined;
 
     if (barcode.startsWith("2")) {
       parsed = parseBarcode(barcode);
@@ -32,6 +38,7 @@ export class VerifyProductAndStock {
       if (!bodyQuantity || bodyQuantity <= 0) {
         throw new AppError(400, "Quantity is required and must be > 0");
       }
+
       quantity = bodyQuantity;
     }
 
@@ -54,6 +61,7 @@ export class VerifyProductAndStock {
 
     res.locals.product = product;
     res.locals.quantity = quantity;
+
     if (parsed) res.locals.parsedBarcode = parsed;
 
     next();
