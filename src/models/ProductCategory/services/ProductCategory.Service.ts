@@ -1,6 +1,7 @@
 import { injectable } from "tsyringe";
 import { prisma } from "../../../config/db/database.js";
 import { AppError } from "../../../shared/errors/AppError.js";
+import { normalizeText } from "../../../shared/utils/normalizeText.js";
 
 @injectable()
 export class ProductCategoryService {
@@ -10,6 +11,7 @@ export class ProductCategoryService {
         data: {
           name,
           companyId,
+          nameNormalized: normalizeText(name),
         },
       });
 

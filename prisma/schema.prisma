@@ -96,7 +96,7 @@ enum CustomerTransactionReferenceType {
 
 enum StockType {
   UNIT // estoque por unidade
-  KILO // estoque por quilo
+  KG // estoque por quilo
 }
 
 enum StockMovementType {
@@ -324,8 +324,9 @@ model CashRegisterEntry {
 // ======================================================
 
 model ProductCategory {
-  id   String @id @default(uuid())
-  name String
+  id             String @id @default(uuid())
+  name           String
+  nameNormalized String
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])

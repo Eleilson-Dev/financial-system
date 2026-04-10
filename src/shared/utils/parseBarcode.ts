@@ -33,7 +33,6 @@ export const parseBarcode = (code: string): ParsedBarcode => {
     };
   }
 
-  // Qualquer outro código normal é unitário
   return {
     type: "unit",
     productCode: code,

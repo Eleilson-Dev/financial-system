@@ -58,7 +58,7 @@ export class SaleService {
           let quantity: Prisma.Decimal;
           let unitPrice: Prisma.Decimal;
 
-          if (product.stockType === "KILO") {
+          if (product.stockType === "KG") {
             if (parsed.type !== "weighted") {
               throw new AppError(400, "Invalid barcode for weighted product");
             }

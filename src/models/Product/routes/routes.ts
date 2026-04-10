@@ -8,6 +8,8 @@ import { createProductSchema, searchProductSchema } from "../schema/schema.js";
 import { AttachMonthlyClosureStatus } from "../../../shared/middlewares/AttachMonthlyClosureStatus.middleware.js";
 import { VerifyProductAndStock } from "../middlewares/VerifyProductAndStock.middleware.js";
 import { ValidateQuery } from "../../../shared/middlewares/ValidateQuery.middleware.js";
+import { ValidateCategoryById } from "../middlewares/ValidateCategoryById.middleware.js";
+import { ValidateProductBarcode } from "../middlewares/ValidateProductBarcode.middleware.js";
 
 container.registerSingleton("ProductService", ProductService);
 const productController = container.resolve(ProductController);
@@ -19,6 +21,8 @@ productRouter.post(
   VerifyToken.execute,
   AttachMonthlyClosureStatus.execute,
   ValidateBody.execute(createProductSchema),
+  ValidateCategoryById.execute,
+  ValidateProductBarcode.execute,
   (req, res) => productController.createProduct(req, res),
 );
 

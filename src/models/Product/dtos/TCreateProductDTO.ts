@@ -2,7 +2,7 @@ export interface TCreateProductDTO {
   name: string;
   price: number;
   stock: number;
-  stockType: "UNIT" | "KILO";
+  stockType: "UNIT" | "KG";
   barcode: string;
   categoryId?: string;
   companyId: string;

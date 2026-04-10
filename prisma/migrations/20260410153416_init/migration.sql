@@ -29,7 +29,7 @@ CREATE TYPE "CashRegisterEntryReferenceType" AS ENUM ('SALE', 'CUSTOMER_ACCOUNT'
 CREATE TYPE "CustomerTransactionReferenceType" AS ENUM ('DEBT', 'PAYMENT');
 
 -- CreateEnum
-CREATE TYPE "StockType" AS ENUM ('UNIT', 'KILO');
+CREATE TYPE "StockType" AS ENUM ('UNIT', 'KG');
 
 -- CreateEnum
 CREATE TYPE "StockMovementType" AS ENUM ('SALE', 'ADD', 'LOSS');
@@ -145,6 +145,7 @@ CREATE TABLE "CashRegisterEntry" (
 CREATE TABLE "ProductCategory" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "nameNormalized" TEXT NOT NULL,
     "companyId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

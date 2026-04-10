@@ -13,8 +13,8 @@ export const createProductSchema = z.object({
     .nonnegative({ message: "O estoque não pode ser negativo" })
     .optional()
     .default(0),
-  stockType: z.enum(["UNIT", "KILO"], {
-    message: "stockType deve ser 'UNIT' ou 'KILO'",
+  stockType: z.enum(["UNIT", "KG"], {
+    message: "stockType deve ser 'UNIT' ou 'KG'",
   }),
 });
 
