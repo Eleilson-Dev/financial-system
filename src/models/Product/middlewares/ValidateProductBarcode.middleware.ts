@@ -12,11 +12,10 @@ export class ValidateProductBarcode {
         throw new AppError(400, "Barcode is required");
       }
 
-      // 🔥 verifica se já existe
       const productExists = await prisma.product.findFirst({
         where: {
           barcode,
-          companyId, // 🔥 importante (multi-tenant)
+          companyId,
         },
       });
 
